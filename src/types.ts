@@ -11,8 +11,8 @@ export interface TrajectoryProps {
     episode: number;
     avg_price1: number;
     avg_price2: number;
-  }>;
-  benchmarks: {
+    avg_profit1: number;
+    avg_profit2: number;
 }
 
 export interface BenchmarkProps {
@@ -23,10 +23,18 @@ export interface BenchmarkProps {
     monopoly_profit_per_firm: number;
 }
 
+export interface FinalAverageProps {
+  final_avg_p1: number;
+  final_avg_p2: number;
+  final_avg_joint_price: number;
+  final_avg_profit1: number;
+  final_avg_profit2: number;
+}
+
 export interface SimulationResults {
   trajectory: Array<TrajectoryProps>;
   benchmarks: BenchmarkProps;
-  final_avg_joint_price: number;
+  final_averages: FinalAverageProps;
 }
 
 declare global {

@@ -64,7 +64,7 @@ export default function App() {
                             <div><strong>Marginal Cost:</strong> €{results.benchmarks.marginal_cost}</div>
                             <div><strong>Bertrand Price:</strong> €{results.benchmarks.bertrand_price}</div>
                             <div><strong>Monopoly Price:</strong> €{results.benchmarks.monopoly_price}</div>
-                            <div><strong>Learned Price:</strong> €{results.final_avg_joint_price}</div>
+                            <div><strong>Learned Price:</strong> €{results.final_averages.final_avg_joint_price}</div>
                         </div>
                     </div>
 
