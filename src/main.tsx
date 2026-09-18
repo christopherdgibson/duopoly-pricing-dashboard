@@ -1,8 +1,6 @@
 import {StrictMode} from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import type { MarketConfig, SimulationResults } from './types';
-
 
 const rootElement = document.getElementById('root');
 

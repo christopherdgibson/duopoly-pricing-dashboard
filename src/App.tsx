@@ -1,11 +1,8 @@
-import { createElement, useState } from 'react';
+import { useState } from 'react';
+import Controls from './components/Controls';
+import TrajectoryChart from './components/TrajectoryChart';
 import { usePyodide } from './hooks/usePyodide';
 import type { MarketConfig, SimulationResults } from './types';
-import type { Dispatch, SetStateAction } from "react";
-
-interface AppProps {
-  initialConfig?: Partial<MarketConfig>;
-}
 
 const DEFAULT_CONFIG: MarketConfig = {
   episodes: 5000,
@@ -15,47 +12,68 @@ const DEFAULT_CONFIG: MarketConfig = {
   windowSize: 100,
 };
 
-export default function App({initialConfig}: AppProps) {
-
-    const { isLoading, runSimulation } = usePyodide();
+export default function App() {
+    const [config, setConfig] = useState<MarketConfig>(DEFAULT_CONFIG);
     const [isSimulating, setIsSimulating] = useState(false);
     const [results, setResults] = useState<SimulationResults | null>(null);
-
-    const [config, setConfig] = useState<MarketConfig>({
-        ...DEFAULT_CONFIG,
-        ...initialConfig,
-    });
+    const { isLoading, runSimulation } = usePyodide();
 
     const handleRun = async () => {
         setIsSimulating(true);
-        const output = await runSimulation(config);
-        setResults(output);
-        setIsSimulating(false);
+        try {
+            const output = await runSimulation(config);
+            setResults(output);
+        } catch (err) {
+            console.error('Simulation execution failed:', err);
+        } finally {
+            setIsSimulating(false);
+        }
     };
 
     if (isLoading) {
-        return createElement('div', { style: { padding: '20px' } },
-        createElement('h2', null, 'Loading Python Environment...'),
-        createElement('p', null, 'Downloading Pyodide WASM into browser.')
+        return (
+            <div style={{ padding: '40px', textAlign: 'center' }}>
+                <h2>Loading Python Environment...</h2>
+                <p>Downloading Pyodide WASM runtime into browser.</p>
+            </div>
         );
     }
 
-    return createElement('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto' } },
-        createElement('h1', null, 'Algorithmic Collusion Simulator'),
-        createElement('div', { style: { background: '#f5f5f5', padding: '15px', borderRadius: '8px', marginBottom: '20px' } },
-            createElement('h3', null, 'Market Parameters'),
-            createElement('button', {
-                onClick: handleRun,
-                disabled: isSimulating,
-                style: { padding: '10px 20px', cursor: isSimulating ? 'not-allowed' : 'pointer' }
-            }, isSimulating ? 'Running Python in Browser...' : 'Run Simulation')
-        ),
-        results && createElement('div', { style: { border: '1px solid #ddd', padding: '15px', borderRadius: '8px' } },
-            createElement('h3', null, 'Simulation Results'),
-            createElement('p', null, 'Marginal Cost: $' + results.benchmarks.marginal_cost),
-            createElement('p', null, 'Bertrand Price: $' + results.benchmarks.bertrand_price),
-            createElement('p', null, 'Monopoly Price: $' + results.benchmarks.monopoly_price),
-            createElement('p', null, 'Learned Joint Price: $' + results.final_avg_joint_price)
-        )
+    return (
+        <div style={{ padding: '20px', maxWidth: '850px', margin: '0 auto' }}>
+            <h1>Algorithmic Collusion Simulator</h1>
+            
+            <Controls 
+                config={config} 
+                setConfig={setConfig} 
+                onRun={handleRun} 
+                isSimulating={isSimulating} 
+            />
+
+            {results && (
+                <>
+                    <div style={{ 
+                    background: '#ffffff', 
+                    border: '1px solid #e0e0e0', 
+                    padding: '20px', 
+                    borderRadius: '8px', 
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)' 
+                    }}>
+                        <h3 style={{ marginTop: 0 }}>Simulation Results</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+                            <div><strong>Marginal Cost:</strong> €{results.benchmarks.marginal_cost}</div>
+                            <div><strong>Bertrand Price:</strong> €{results.benchmarks.bertrand_price}</div>
+                            <div><strong>Monopoly Price:</strong> €{results.benchmarks.monopoly_price}</div>
+                            <div><strong>Learned Price:</strong> €{results.final_avg_joint_price}</div>
+                        </div>
+                    </div>
+
+                    <TrajectoryChart 
+                        trajectory={results.trajectory} 
+                        benchmarks={results.benchmarks} 
+                    />
+                </>
+            )}
+        </div>
     );
 }
