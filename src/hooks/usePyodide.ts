@@ -48,10 +48,12 @@ export function usePyodide() {
       // 2. Invoke function directly with typed JavaScript parameters
       const pyProxy = runEngine(
         config.episodes,
-        config.a,
-        config.b,
-        config.cost,
-        config.windowSize
+        config.windowSize,
+        config.demandIntercept,
+        config.demandSlope,
+        config.marginalCost,
+        config.alpha,
+        config.epsilon
       );
 
       // 3. Convert Pyodide dict/proxy object to native JavaScript object

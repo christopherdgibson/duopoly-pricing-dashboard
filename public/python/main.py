@@ -3,21 +3,33 @@ from environment import DuopolyPricingEnv
 from agent import QLearningAgent
 from benchmarks import MarketBenchmarks
 
-def run_simulation_engine(episodes, a, b, cost, window_size):
-    env = DuopolyPricingEnv(a=a, b=b, cost=cost)
-    agent1 = QLearningAgent(env.n_prices)
-    agent2 = QLearningAgent(env.n_prices)
-    benchmarks = MarketBenchmarks(a=a, b=b, cost=cost)
+def run_simulation_engine(
+    episodes: int,
+    window_size: int,
+    demand_intercept: float,
+    demand_slope: float,
+    marginal_cost: float,
+    alpha: float,
+    epsilon: float
+):
+    episodes = int(episodes)
+    window_size = min(episodes, int(window_size))
+
+    env = DuopolyPricingEnv(a=demand_intercept, b=demand_slope, cost=marginal_cost)
+    agent1 = QLearningAgent(n_prices=env.n_prices, alpha=alpha, epsilon=epsilon)
+    agent2 = QLearningAgent(n_prices=env.n_prices, alpha=alpha, epsilon=epsilon)
+    benchmarks = MarketBenchmarks(a=demand_intercept, b=demand_slope, cost=marginal_cost)
 
     state = (0, 0)
     all_p1, all_p2 = [], []
     all_r1, all_r2 = [], []
     trajectory = []
 
-    for ep in range(int(episodes)):
-        epsilon = max(0.01, 0.2 * (1 - ep / episodes))
-        agent1.epsilon = epsilon
-        agent2.epsilon = epsilon
+    for ep in range(episodes):
+        # Decay epsilon linearly from starting value down to 0.01
+        current_epsilon = max(0.01, epsilon * (1 - ep / episodes))
+        agent1.epsilon = current_epsilon
+        agent2.epsilon = current_epsilon
 
         a1 = agent1.select_action(state)
         a2 = agent2.select_action(state)
@@ -32,8 +44,9 @@ def run_simulation_engine(episodes, a, b, cost, window_size):
         all_r1.append(r1)
         all_r2.append(r2)
 
-        if (ep + 1) % int(window_size) == 0:
-            start = ep + 1 - int(window_size)
+        # Log rolling average trajectory window
+        if (ep + 1) % window_size == 0:
+            start = ep + 1 - window_size
             trajectory.append({
                 "episode": ep + 1,
                 "avg_price1": float(np.mean(all_p1[start:ep + 1])),
@@ -42,7 +55,8 @@ def run_simulation_engine(episodes, a, b, cost, window_size):
                 "avg_profit2": float(np.mean(all_r2[start:ep + 1])),
             })
 
-    last_10_pct = int(episodes * 0.10)
+    # Ensure last_10_pct is at least 1 episode
+    last_10_pct = max(1, int(episodes * 0.10))
     p1_mean = float(np.mean(all_p1[-last_10_pct:]))
     p2_mean = float(np.mean(all_p2[-last_10_pct:]))
 
