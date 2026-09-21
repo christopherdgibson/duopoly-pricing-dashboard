@@ -1,5 +1,3 @@
-# core/benchmarks.py
-
 class MarketBenchmarks:
     """
     Computes analytical benchmark equilibrium prices and profits for a

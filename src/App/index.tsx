@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Controls from '../components/Controls';
+import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
 import TrajectoryChart from '../components/TrajectoryChart';
 import { usePyodide } from '../hooks/usePyodide';
 import type { MarketConfig, SimulationResults } from '../types';
@@ -18,7 +19,7 @@ const DEFAULT_CONFIG: MarketConfig = {
 export default function App() {
   const [config, setConfig] = useState<MarketConfig>(DEFAULT_CONFIG);
   const [isRunning, setIsRunning] = useState(false);
-  const [results, setResults] = useState<SimulationResults | null>(null);
+  const [results, setResults] = useState<Array<SimulationResults> | null>(null);
   const { isLoading, runSimulation } = usePyodide();
 
   const handleRun = async () => {
@@ -55,32 +56,39 @@ export default function App() {
 
       {results && (
         <>
-          <div className={styles.resultsCard}>
-            <h3 className={styles.resultsTitle}>Simulation Results</h3>
-            <div className={styles.resultsGrid}>
-              <div className={styles.metricItem}>
-                <span className={styles.metricLabel}>Marginal Cost</span>
-                <span className={styles.metricValue}>€{results.benchmarks.marginal_cost}</span>
-              </div>
-              <div className={styles.metricItem}>
-                <span className={styles.metricLabel}>Bertrand Price</span>
-                <span className={styles.metricValue}>€{results.benchmarks.bertrand_price}</span>
-              </div>
-              <div className={styles.metricItem}>
-                <span className={styles.metricLabel}>Monopoly Price</span>
-                <span className={styles.metricValue}>€{results.benchmarks.monopoly_price}</span>
-              </div>
-              <div className={styles.metricItem}>
-                <span className={styles.metricLabel}>Learned Price</span>
-                <span className={styles.metricValue}>€{results.final_averages.final_avg_joint_price}</span>
-              </div>
-            </div>
-          </div>
+          <BenchmarkResultsCard benchmarks={results[0].benchmarks} />
+          
+          {results.length <= 1 && (
+            <SimulationResultsCard final_averages={results[0].final_averages}/>
+          )}
 
-          <TrajectoryChart
-            trajectory={results.trajectory}
-            benchmarks={results.benchmarks}
-          />
+          {results.length > 1 && (
+            <>
+              <SimulationResultsCard title={"Simulation Card - Symmetric Costs"} final_averages={results[0].final_averages}/>
+              <SimulationResultsCard title={"Simulation Card - Asymmetric Costs"} final_averages={results[1].final_averages}/>
+            </>
+          )}
+
+          {results.length <= 1 && (
+            <TrajectoryChart
+              trajectory={results[0].trajectory}
+              benchmarks={results[0].benchmarks}
+            />
+          )}
+          {results.length > 1 && (
+            <>
+              <TrajectoryChart
+                title={"Price Trajectory vs Economic Benchmarks - Symmetric Costs"}
+                trajectory={results[0].trajectory}
+                benchmarks={results[0].benchmarks}
+              />
+              <TrajectoryChart
+                title={"Price Trajectory vs Economic Benchmarks - Asymmetric Costs"}
+                trajectory={results[1].trajectory}
+                benchmarks={results[1].benchmarks}
+              />
+            </>
+          )}
         </>
       )}
     </div>

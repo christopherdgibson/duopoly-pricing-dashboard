@@ -10,8 +10,13 @@ class QLearningAgent:
         # State: (previous_price_p1, previous_price_p2), Action: my_price
         self.q_table = np.zeros((n_prices, n_prices, n_prices))
 
-    def select_action(self, state: tuple) -> int:
-        if np.random.rand() < self.epsilon:
+    def is_exploration(self, epsilon: float) -> bool:
+        return np.random.rand() < epsilon
+
+    def select_action(self, state: tuple, explore: bool | None = None) -> int:
+        if explore is None:
+            explore = self.is_exploration(self.epsilon)
+        if explore:
             return int(np.random.choice(self.n_prices))
         p1_idx, p2_idx = state
         return int(np.argmax(self.q_table[p1_idx, p2_idx]))

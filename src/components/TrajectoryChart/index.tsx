@@ -14,16 +14,17 @@ import type { BenchmarkProps, TrajectoryProps } from '../../types';
 import styles from './TrajectoryChart.module.css';
 
 interface TrajectoryChartProps {
+  title?: string;
   trajectory: Array<TrajectoryProps>;
   benchmarks: BenchmarkProps;
 }
 
-export default function TrajectoryChart({ trajectory, benchmarks }: TrajectoryChartProps) {
+export default function TrajectoryChart({ title = "Price Trajectory vs Economic Benchmarks", trajectory, benchmarks }: TrajectoryChartProps) {
   if (!trajectory || trajectory.length === 0) return null;
 
   return (
     <div className={styles.card}>
-      <h3 className={styles.title}>Price Trajectory vs Economic Benchmarks</h3>
+      <h3 className={styles.title}>{title}</h3>
       
       <div className={styles.chartContainer}>
         <ResponsiveContainer width="100%" height="100%">

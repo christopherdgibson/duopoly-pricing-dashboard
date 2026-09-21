@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type {MarketConfig, SimulationResults} from '../types';
+import type { MarketConfig, SimulationResults } from '../types';
 
 export function usePyodide() {
   const [pyodide, setPyodide] = useState<any>(null);
@@ -12,10 +12,11 @@ export function usePyodide() {
         await py.loadPackage(['numpy']);
 
         // Fetch all four Python files
-        const [envSrc, agentSrc, benchSrc, mainSrc] = await Promise.all([
+        const [envSrc, agentSrc, benchSrc, simSrc, mainSrc] = await Promise.all([
           fetch('/python/environment.py').then((res) => res.text()),
           fetch('/python/agent.py').then((res) => res.text()),
           fetch('/python/benchmarks.py').then((res) => res.text()),
+          fetch('/python/simulation.py').then((res) => res.text()),
           fetch('/python/main.py').then((res) => res.text()),
         ]);
 
@@ -23,6 +24,7 @@ export function usePyodide() {
         py.FS.writeFile('environment.py', envSrc);
         py.FS.writeFile('agent.py', agentSrc);
         py.FS.writeFile('benchmarks.py', benchSrc);
+        py.FS.writeFile('simulation.py', simSrc);
 
         // Execute main.py once to load run_simulation_engine into Python's global scope
         await py.runPythonAsync(mainSrc);
@@ -38,7 +40,7 @@ export function usePyodide() {
     initPyodide();
   }, []);
 
-  const runSimulation = async (config: MarketConfig): Promise<SimulationResults | null> => {
+  const runSimulation = async (config: MarketConfig): Promise<Array<SimulationResults> | null> => {
     if (!pyodide) return null;
 
     try {
@@ -57,7 +59,7 @@ export function usePyodide() {
       );
 
       // 3. Convert Pyodide dict/proxy object to native JavaScript object
-      const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as SimulationResults;
+      const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as Array<SimulationResults>;
 
       // 4. Destroy proxy to prevent WASM memory leaks
       pyProxy.destroy();
