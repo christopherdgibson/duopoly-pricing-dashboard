@@ -12,7 +12,8 @@ export function usePyodide(simulation: string) {
         await py.loadPackage(['numpy']);
 
         // Fetch all four Python files
-        const [envSrc, agentSrc, benchSrc, simSrc, mainSrc] = await Promise.all([
+        const [configSrc, envSrc, agentSrc, benchSrc, simSrc, mainSrc] = await Promise.all([
+          fetch('/python/config.py').then((res) => res.text()),
           fetch('/python/environment.py').then((res) => res.text()),
           fetch('/python/agent.py').then((res) => res.text()),
           fetch('/python/benchmarks.py').then((res) => res.text()),
@@ -21,6 +22,7 @@ export function usePyodide(simulation: string) {
         ]);
 
         // Write support modules to the virtual file system
+        py.FS.writeFile('config.py', configSrc);
         py.FS.writeFile('environment.py', envSrc);
         py.FS.writeFile('agent.py', agentSrc);
         py.FS.writeFile('benchmarks.py', benchSrc);
@@ -55,7 +57,8 @@ export function usePyodide(simulation: string) {
         config.convergeThreshold,
         config.demandIntercept,
         config.demandSlope,
-        config.marginalCost,
+        config.marginalCost1,
+        config.marginalCost2,
         config.alpha,
         config.epsilon
       );

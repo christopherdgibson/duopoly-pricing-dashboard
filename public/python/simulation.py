@@ -1,18 +1,41 @@
+from dataclasses import dataclass, field
+from environment import DuopolyPricingEnv
+from agent import QLearningAgent
+from benchmarks import MarketBenchmarks
+from config import MarketParams
+
+@dataclass
 class MarketSimulation:
-    def __init__(self, env, agent1, agent2, benchmarks, state=(0,0), 
-            all_p1:list=[], all_p2:list=[], all_r1:list=[], all_r2:list=[], 
-            all_optimal_a1:list=[], all_optimal_a2:list=[], streak1=1, streak2=1, trajectory:list=[]):
-        self.env = env
-        self.agent1 = agent1
-        self.agent2 = agent2
-        self.benchmarks = benchmarks
-        self.state = state
-        self.all_p1 = all_p1
-        self.all_p2 = all_p2
-        self.all_r1 = all_r1
-        self.all_r2 = all_r2
-        self.all_optimal_a1 = all_optimal_a1
-        self.all_optimal_a2 = all_optimal_a2
-        self.streak1 = streak1
-        self.streak2 = streak2
-        self.trajectory = trajectory
+    env: DuopolyPricingEnv
+    agent1: QLearningAgent
+    agent2: QLearningAgent
+    benchmarks: MarketBenchmarks
+    
+    state: tuple[int, int] = (0, 0)
+    streak1: int = 1
+    streak2: int = 1
+    
+    all_p1: list[float] = field(default_factory=list)
+    all_p2: list[float] = field(default_factory=list)
+    all_r1: list[float] = field(default_factory=list)
+    all_r2: list[float] = field(default_factory=list)
+    all_optimal_a1: list[int] = field(default_factory=list)
+    all_optimal_a2: list[int] = field(default_factory=list)
+    trajectory: list[dict] = field(default_factory=list)
+
+    @classmethod
+    def from_params(cls, params: MarketParams) -> "MarketSimulation":
+        env = DuopolyPricingEnv(
+            a=params.demand_intercept, 
+            b=params.demand_slope, 
+            cost=[params.marginal_cost_1, params.marginal_cost_2]
+        )
+        agent1 = QLearningAgent(n_prices=env.n_prices, alpha=params.alpha, epsilon=params.epsilon)
+        agent2 = QLearningAgent(n_prices=env.n_prices, alpha=params.alpha, epsilon=params.epsilon)
+        benchmarks = MarketBenchmarks(
+            a=params.demand_intercept, 
+            b=params.demand_slope, 
+            cost=[params.marginal_cost_1, params.marginal_cost_2]
+        )
+        
+        return cls(env=env, agent1=agent1, agent2=agent2, benchmarks=benchmarks)

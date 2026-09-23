@@ -79,11 +79,24 @@ export default function Controls({config, onChange, convergence, setConvergence,
           <input
             type="number"
             className={styles.input}
-            value={config.marginalCost}
+            value={config.marginalCost1}
             disabled={isRunning}
-            onChange={(e) => handleInputChange('marginalCost', Number(e.target.value))}
+            onChange={(e) => handleInputChange('marginalCost1', Number(e.target.value))}
           />
         </div>
+        {/* <div className={styles.fieldGroup}>
+          <label className={styles.label}>
+            <span>Marginal Cost 2 (<em>c2</em>)</span>
+            <span className={styles.hint}>Unit cost</span>
+          </label>
+          <input
+            type="number"
+            className={styles.input}
+            value={config.marginalCost2}
+            disabled={isRunning}
+            onChange={(e) => handleInputChange('marginalCost2', Number(e.target.value))}
+          />
+        </div> */}
       </div>
 
       <h3 className={styles.subTitle}>Learning Parameters</h3>

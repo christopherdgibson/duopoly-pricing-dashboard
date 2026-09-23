@@ -12,7 +12,8 @@ const DEFAULT_CONFIG: MarketConfig = {
   convergeThreshold: 50,
   demandIntercept: 100,
   demandSlope: 2,
-  marginalCost: 5,
+  marginalCost1: 5,
+  marginalCost2: 5,
   alpha: 0.15,     // Standard Q-learning rate
   epsilon: 0.20,   // Starts with 20% random exploration
 };

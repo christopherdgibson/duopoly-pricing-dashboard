@@ -8,7 +8,8 @@ export interface MarketConfig {
   // Economic Environment
   demandIntercept: number;
   demandSlope: number;
-  marginalCost: number;
+  marginalCost1: number;
+  marginalCost2: number;
 
   // Q-Learning Hyperparameters
   alpha: number;            // Learning rate (how aggressively Q-values update)
