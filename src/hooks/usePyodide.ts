@@ -4,6 +4,7 @@ import type { MarketConfig, RunConfig, SimulationPayload, SimulationResults } fr
 export function usePyodide(simulation: string) {
   const [pyodide, setPyodide] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const base = import.meta.env.BASE_URL;
 
   useEffect(() => {
     async function initPyodide() {
@@ -13,12 +14,12 @@ export function usePyodide(simulation: string) {
 
         // Fetch all four Python files
         const [configSrc, envSrc, agentSrc, benchSrc, simSrc, mainSrc] = await Promise.all([
-          fetch('/python/config.py').then((res) => res.text()),
-          fetch('/python/environment.py').then((res) => res.text()),
-          fetch('/python/agent.py').then((res) => res.text()),
-          fetch('/python/benchmarks.py').then((res) => res.text()),
-          fetch('/python/simulation.py').then((res) => res.text()),
-          fetch('/python/main.py').then((res) => res.text()),
+          fetch(`${base}python/config.py`).then((res) => res.text()),
+          fetch(`${base}python/environment.py`).then((res) => res.text()),
+          fetch(`${base}python/agent.py`).then((res) => res.text()),
+          fetch(`${base}python/benchmarks.py`).then((res) => res.text()),
+          fetch(`${base}python/simulation.py`).then((res) => res.text()),
+          fetch(`${base}python/main.py`).then((res) => res.text()),
         ]);
 
         // Write support modules to the virtual file system

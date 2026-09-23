@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/duopoloy-pricing-dashboard/',
+  base: '/duopoly-pricing-dashboard/',
   build: {
     outDir: 'dist',
   },
