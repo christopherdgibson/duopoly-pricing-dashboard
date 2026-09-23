@@ -2,36 +2,17 @@ import numpy as np
 from simulation import MarketSimulation
 from config import MarketParams, RunConfig, SimulationConfig
 
-def run_simulation_engine(
-    episodes: int,
-    window_size: int,
-    convergence: bool,
-    converge_threshold: int,
-    demand_intercept: float,
-    demand_slope: float,
-    marginal_cost_1: float,
-    marginal_cost_2: float,
-    alpha: float,
-    epsilon: float
-):
-    planned_episodes = int(episodes)
-    # 1. Package individual inputs into dataclasses
-    market_params = MarketParams(
-        demand_intercept=float(demand_intercept),
-        demand_slope=float(demand_slope),
-        marginal_cost_1=float(marginal_cost_1),
-        marginal_cost_2=float(marginal_cost_2),
-        alpha=float(alpha),
-        epsilon=float(epsilon)
-    )    
+def run_simulation_engine(config_dict: dict):
 
-    run_config = RunConfig(
-        episodes=int(1E+7) if convergence else planned_episodes,
-        decay_episodes=planned_episodes,      
-        window_size=min(planned_episodes, int(window_size)),
-        convergence=bool(convergence),
-        converge_threshold=int(converge_threshold)
-    )
+    # Convert Pyodide JsProxy objects to native Python dicts
+    if hasattr(config_dict, "to_py"):
+        config_dict = config_dict.to_py()
+
+    # Unpack JS dictionaries directly into dataclass constructors
+    market_params = MarketParams(**config_dict["market"])
+    run_inputs = RunConfig(**config_dict["run"])
+
+    run_config = RunConfig.from_params(run_inputs)
 
     config = SimulationConfig(market=market_params, run=run_config)
 
@@ -117,7 +98,7 @@ def run_simulation_engine(
         "final_avg_profit2": round(r2_mean, 4),
         "final_streak1": sim.streak1,
         "final_streak2": sim.streak2,
-        "episodes_to_converge": actual_episodes if convergence else None
+        "episodes_to_converge": actual_episodes if run_config.convergence else None
     }
 
     simResults.append({

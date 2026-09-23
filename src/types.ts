@@ -1,24 +1,23 @@
 // Define configuration interface for sliders
 export interface MarketConfig {
-  // Simulation & Smoothing
-  episodes: number;
-  windowSize: number;
-  convergeThreshold: number;
-
-  // Economic Environment
-  demandIntercept: number;
-  demandSlope: number;
-  marginalCost1: number;
-  marginalCost2: number;
-
-  // Q-Learning Hyperparameters
-  alpha: number;            // Learning rate (how aggressively Q-values update)
-  epsilon: number;          // Initial exploration probability
+  demand_intercept: number;
+  demand_slope: number;
+  marginal_cost_1: number;
+  marginal_cost_2: number;
+  alpha: number;
+  epsilon: number;
 }
 
-export interface SimulationConfig {
+export interface RunConfig {
+  episodes: number;
+  window_size: number;
   convergence: boolean;
-  marketConfig: MarketConfig;
+  converge_threshold: number;
+}
+
+export interface SimulationPayload {
+  market: MarketConfig;
+  run: RunConfig;
 }
 
 export interface TrajectoryProps {

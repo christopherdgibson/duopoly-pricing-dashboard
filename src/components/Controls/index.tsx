@@ -1,36 +1,30 @@
-import React, { Dispatch, SetStateAction } from 'react';
 import Slider from 'react-input-slider';
 import styles from './Controls.module.css';
-import type { MarketConfig } from '../../types';
+import type { SimulationPayload } from '../../types';
 
 interface ControlsProps {
-  config: MarketConfig;
-  onChange: (updatedParams: MarketConfig) => void;
-  convergence: boolean;
-  setConvergence: Dispatch<SetStateAction<boolean>>;
+  payload: SimulationPayload;
+  onChange: (updatedParams: SimulationPayload) => void;
   onRunSimulation: () => void;
   isRunning: boolean;
 }
 
-let inputEpisodes: number;
-
 // export const Controls: React.FC<ControlsProps> = ({
-export default function Controls({config, onChange, convergence, setConvergence, onRunSimulation, isRunning}: ControlsProps) {
-  const handleInputChange = (field: keyof MarketConfig, value: number) => {
+export default function Controls({payload, onChange, onRunSimulation, isRunning}: ControlsProps) {
+
+  const handleConfigChange = <S extends keyof SimulationPayload, F extends keyof SimulationPayload[S]> (
+    section: S,
+    field: F,
+    value: SimulationPayload[S][F]
+  ) => {
     onChange({
-      ...config,
-      [field]: value,
+      ...payload,
+      [section]: {
+        ...payload[section],
+        [field]: value,
+      },
     });
   };
-
-  // const toggleConvergence = () => {
-  //   onChange({
-  //     ...config,
-  //     episodes: convergence ? inputEpisodes : 100000,
-  //   });
-  //   setConvergence(prev => !prev);
-  //   console.log('inputEpisodes: ', inputEpisodes);
-  // };
 
   return (
     <div className={styles.controlsCard}>
@@ -49,9 +43,9 @@ export default function Controls({config, onChange, convergence, setConvergence,
           <input
             type="number"
             className={styles.input}
-            value={config.demandIntercept}
+            value={payload.market.demand_intercept}
             disabled={isRunning}
-            onChange={(e) => handleInputChange('demandIntercept', Number(e.target.value))}
+            onChange={(e) => handleConfigChange('market', 'demand_intercept', Number(e.target.value))}
           />
         </div>
 
@@ -64,9 +58,9 @@ export default function Controls({config, onChange, convergence, setConvergence,
           <input
             type="number"
             className={styles.input}
-            value={config.demandSlope}
+            value={payload.market.demand_slope}
             disabled={isRunning}
-            onChange={(e) => handleInputChange('demandSlope', Number(e.target.value))}
+            onChange={(e) => handleConfigChange('market', 'demand_slope', Number(e.target.value))}
           />
         </div>
 
@@ -79,9 +73,9 @@ export default function Controls({config, onChange, convergence, setConvergence,
           <input
             type="number"
             className={styles.input}
-            value={config.marginalCost1}
+            value={payload.market.marginal_cost_1}
             disabled={isRunning}
-            onChange={(e) => handleInputChange('marginalCost1', Number(e.target.value))}
+            onChange={(e) => handleConfigChange('market', 'marginal_cost_1', Number(e.target.value))}
           />
         </div>
         {/* <div className={styles.fieldGroup}>
@@ -92,9 +86,9 @@ export default function Controls({config, onChange, convergence, setConvergence,
           <input
             type="number"
             className={styles.input}
-            value={config.marginalCost2}
+            value={payload.market.marginal_cost_2}
             disabled={isRunning}
-            onChange={(e) => handleInputChange('marginalCost2', Number(e.target.value))}
+            onChange={(e) => handleConfigChange('market', 'marginal_cost_2', Number(e.target.value))}
           />
         </div> */}
       </div>
@@ -112,22 +106,22 @@ export default function Controls({config, onChange, convergence, setConvergence,
               <input
                 type="number"
                 className={styles.input}
-                value={config.alpha}
+                value={payload.market.alpha}
                 disabled={isRunning}
                 min={0.01}
                 max={1.0}
                 step={0.01}
-                onChange={(e) => handleInputChange('alpha', Number(e.target.value))}
+                onChange={(e) => handleConfigChange('market', 'alpha', Number(e.target.value))}
               />
             </div>
             <Slider
               axis="x"
-              x={config.alpha}
+              x={payload.market.alpha}
               disabled={isRunning}
               xmin={0.01}
               xmax={1.0}
               xstep={0.01}
-              onChange={(e) => handleInputChange('alpha', Number(e.x.toFixed(2)))}/>
+              onChange={(e) => handleConfigChange('market', 'alpha', Number(e.x.toFixed(2)))}/>
           </div>
         </div>
 
@@ -142,22 +136,22 @@ export default function Controls({config, onChange, convergence, setConvergence,
               <input
                 type="number"
                 className={styles.input}
-                value={config.epsilon}
+                value={payload.market.epsilon}
                 disabled={isRunning}
                 min={0.0}
                 max={1.0}
                 step={0.05}
-                onChange={(e) => handleInputChange('epsilon', Number(e.target.value))}
+                onChange={(e) => handleConfigChange('market', 'epsilon', Number(e.target.value))}
               />
             </div>
             <Slider
               axis="x"
-              x={config.epsilon}
+              x={payload.market.epsilon}
               disabled={isRunning}
               xmin={0.0}
               xmax={1.0}
               xstep={0.05}
-              onChange={(e) => handleInputChange('epsilon', Number(e.x.toFixed(2)))}/>
+              onChange={(e) => handleConfigChange('market', 'epsilon', Number(e.x.toFixed(2)))}/>
           </div>
         </div>
       </div>
@@ -173,11 +167,11 @@ export default function Controls({config, onChange, convergence, setConvergence,
           <input
             type="number"
             className={styles.input}
-            value={config.episodes}
-            disabled={convergence || isRunning}
+            value={payload.run.episodes}
+            disabled={payload.run.convergence || isRunning}
             min={100}
             step={100}
-            onChange={(e) => handleInputChange('episodes', Number(e.target.value))}
+            onChange={(e) => handleConfigChange('run', 'episodes', Number(e.target.value))}
           />
         </div>
 
@@ -190,12 +184,12 @@ export default function Controls({config, onChange, convergence, setConvergence,
           <input
             type="number"
             className={styles.input}
-            value={config.windowSize}
+            value={payload.run.window_size}
             disabled={isRunning}
             min={1}
-            max={config.episodes}
+            max={payload.run.episodes}
             step={1}
-            onChange={(e) => handleInputChange('windowSize', Number(e.target.value))}
+            onChange={(e) => handleConfigChange('run', 'window_size', Number(e.target.value))}
           />
         </div>
 
@@ -211,18 +205,19 @@ export default function Controls({config, onChange, convergence, setConvergence,
                 type="checkbox"
                 className={styles.input}
                 disabled={isRunning}
-                onChange={() => setConvergence(prev => !prev)}
+                onChange={(e) => handleConfigChange('run', 'convergence', e.target.checked)}
+                // onChange={() => setConvergence(prev => !prev)}
               />
             </div>
               <input
                 type="number"
                 className={styles.input}
-                value={config.convergeThreshold}
-                disabled={!convergence || isRunning}
+                value={payload.run.converge_threshold}
+                disabled={!payload.run.convergence || isRunning}
                 min={1}
-                max={config.episodes}
+                max={payload.run.episodes}
                 step={1}
-                onChange={(e) => handleInputChange('convergeThreshold', Number(e.target.value))}
+                onChange={(e) => handleConfigChange('run', 'converge_threshold', Number(e.target.value))}
               />
           </div>
     

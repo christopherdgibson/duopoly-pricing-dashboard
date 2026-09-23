@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { MarketConfig, SimulationResults } from '../types';
+import type { MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 
 export function usePyodide(simulation: string) {
   const [pyodide, setPyodide] = useState<any>(null);
@@ -42,31 +42,38 @@ export function usePyodide(simulation: string) {
     initPyodide();
   }, []);
 
-  const runSimulation = async (config: MarketConfig, convergence: boolean): Promise<Array<SimulationResults> | null> => {
+  const runSimulation = async (market: MarketConfig, run: RunConfig): Promise<Array<SimulationResults> | null> => {
     if (!pyodide) return null;
 
     try {
       // 1. Fetch function reference from Python global scope
       const runEngine = pyodide.globals.get(simulation);
 
-      // 2. Invoke function directly with typed JavaScript parameters
-      const pyProxy = runEngine(
-        config.episodes,
-        config.windowSize,
-        convergence,
-        config.convergeThreshold,
-        config.demandIntercept,
-        config.demandSlope,
-        config.marginalCost1,
-        config.marginalCost2,
-        config.alpha,
-        config.epsilon
-      );
+      // 2. Construct function input object
+      const payload: SimulationPayload = {
+        market: {
+          demand_intercept: market.demand_intercept,
+          demand_slope: market.demand_slope,
+          marginal_cost_1: market.marginal_cost_1,
+          marginal_cost_2: market.marginal_cost_2,
+          alpha: market.alpha,
+          epsilon: market.epsilon,
+        },
+        run: {
+          episodes: run.episodes,
+          window_size: run.window_size,
+          convergence: run.convergence,
+          converge_threshold: run.converge_threshold,
+        }
+      };
 
-      // 3. Convert Pyodide dict/proxy object to native JavaScript object
+      // 3. Invoke function directly with typed JavaScript parameters
+      const pyProxy = runEngine(payload);
+
+      // 4. Convert Pyodide dict/proxy object to native JavaScript object
       const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as Array<SimulationResults>;
 
-      // 4. Destroy proxy to prevent WASM memory leaks
+      // 5. Destroy proxy to prevent WASM memory leaks
       pyProxy.destroy();
       runEngine.destroy();
 

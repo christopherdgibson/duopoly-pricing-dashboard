@@ -3,24 +3,27 @@ import Controls from '../components/Controls';
 import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
 import { TrajectoryChart } from '../components/TrajectoryChart';
 import { usePyodide } from '../hooks/usePyodide';
-import type { MarketConfig, SimulationConfig, SimulationResults } from '../types';
+import type { MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 import styles from './App.module.css';
 
-const DEFAULT_CONFIG: MarketConfig = {
-  episodes: 5000,
-  windowSize: 100,
-  convergeThreshold: 50,
-  demandIntercept: 100,
-  demandSlope: 2,
-  marginalCost1: 5,
-  marginalCost2: 5,
+const DEFAULT_MARKET_CONFIG: MarketConfig = {
+  demand_intercept: 100,
+  demand_slope: 2,
+  marginal_cost_1: 5,
+  marginal_cost_2: 5,
   alpha: 0.15,     // Standard Q-learning rate
   epsilon: 0.20,   // Starts with 20% random exploration
 };
 
+const DEFAULT_RUN_CONFIG: RunConfig = {
+  episodes: 5000,
+  window_size: 100,
+  convergence: false,
+  converge_threshold: 50
+};
+
 export default function App() {
-  const [convergence, setConvergence] = useState<boolean>(false);
-  const [config, setConfig] = useState<MarketConfig>(DEFAULT_CONFIG);
+  const [payload, setPayload] = useState<SimulationPayload>({market: DEFAULT_MARKET_CONFIG, run: DEFAULT_RUN_CONFIG});
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<Array<SimulationResults> | null>(null);
   const { isLoading, runSimulation } = usePyodide('run_simulation_engine');
@@ -28,8 +31,7 @@ export default function App() {
   const handleRun = async () => {
     setIsRunning(true);
     try {
-      // const simConfig: SimulationConfig = {...config, convergence}
-      const output = await runSimulation(config, convergence);
+      const output = await runSimulation(payload.market, payload.run);
       setResults(output);
     } catch (err) {
       console.error('Simulation execution failed:', err);
@@ -52,10 +54,8 @@ export default function App() {
       <h1 className={styles.title}>Algorithmic Collusion Simulator</h1>
 
       <Controls
-        config={config}
-        onChange={setConfig}
-        convergence={convergence}
-        setConvergence={setConvergence}
+        payload={payload}
+        onChange={setPayload}
         onRunSimulation={handleRun}
         isRunning={isRunning}
       />
