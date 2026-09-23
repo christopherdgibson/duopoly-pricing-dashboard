@@ -18,6 +18,7 @@ pnpm-debug.log*
 !.vscode/settings.json
 .DS_Store
 Thumbs.db
+.vs/*
 
 # Drafts
 drafts

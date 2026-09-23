@@ -1,4 +1,4 @@
-import type { BenchmarkProps, FinalAverageProps, SimulationResults } from '../../types';
+import type { BenchmarkProps, FinalAverageProps } from '../../types';
 import styles from './ResultsCard.module.css';
 
 interface CardProps {
@@ -80,6 +80,28 @@ export function SimulationResultsCard({ title="Simulation Results", final_averag
                         €{final_averages.final_avg_profit2}
                     </span>
                 </div>
+                {final_averages.episodes_to_converge && (
+                    <>
+                        <div className={styles.metricItem}>
+                            <span className={styles.metricLabel}>Final Streak 1</span>
+                            <span className={styles.metricValue}>
+                                {final_averages.final_streak1}
+                            </span>
+                        </div>
+                        <div className={styles.metricItem}>
+                            <span className={styles.metricLabel}>Final Streak 2</span>
+                            <span className={styles.metricValue}>
+                                {final_averages.final_streak2}
+                            </span>
+                        </div>
+                        <div className={styles.metricItem}>
+                            <span className={styles.metricLabel}>Episodes to Converge</span>
+                            <span className={styles.metricValue}>
+                                {final_averages.episodes_to_converge}
+                            </span>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

@@ -10,16 +10,28 @@ import {
   ReferenceLine
 } from 'recharts';
 
+import { RenderableText } from 'recharts';
+
 import type { BenchmarkProps, TrajectoryProps } from '../../types';
 import styles from './TrajectoryChart.module.css';
 
 interface TrajectoryChartProps {
-  title?: string;
   trajectory: Array<TrajectoryProps>;
-  benchmarks: BenchmarkProps;
+  benchmarks?: BenchmarkProps;
+  title?: string;
+  dataKey1: keyof TrajectoryProps;
+  dataKey2: keyof TrajectoryProps;
+  name1: string;
+  name2: string;
+  formatType?: string;
+  xLabel: RenderableText;
+  yLabel: RenderableText;
 }
 
-export default function TrajectoryChart({ title = "Price Trajectory vs Economic Benchmarks", trajectory, benchmarks }: TrajectoryChartProps) {
+export function TrajectoryChart({ title = "Price Trajectory vs Economic Benchmarks", trajectory, benchmarks, 
+    dataKey1, dataKey2, name1, name2, 
+    formatType = "currency", xLabel, yLabel 
+}: TrajectoryChartProps) {
   if (!trajectory || trajectory.length === 0) return null;
 
   return (
@@ -34,7 +46,7 @@ export default function TrajectoryChart({ title = "Price Trajectory vs Economic 
               dataKey="episode"
               tick={{ fontSize: 12, fill: '#64748b' }}
               label={{ 
-                value: 'Episode', 
+                value: xLabel,
                 position: 'insideBottom', 
                 offset: -12, 
                 fill: '#475569', 
@@ -46,7 +58,7 @@ export default function TrajectoryChart({ title = "Price Trajectory vs Economic 
               domain={['auto', 'auto']}
               tick={{ fontSize: 12, fill: '#64748b' }}
               label={{ 
-                value: 'Price (€)', 
+                value: yLabel, 
                 angle: -90, 
                 position: 'insideLeft', 
                 offset: 0, 
@@ -58,7 +70,9 @@ export default function TrajectoryChart({ title = "Price Trajectory vs Economic 
             <Tooltip
               wrapperClassName={styles.tooltip}
               formatter={(value) => [
-                typeof value === 'number' ? `€${value.toFixed(2)}` : '',
+                (typeof value === 'number')
+                  ? (formatType === 'currency' ? `€${value.toFixed(2)}` : value)
+                  : '',
                 ''
               ]}
             />
@@ -66,47 +80,51 @@ export default function TrajectoryChart({ title = "Price Trajectory vs Economic 
 
             <Line
               type="monotone"
-              dataKey="avg_price1"
+              dataKey={dataKey1}
               stroke="#3b82f6"
               strokeWidth={2}
-              name="Firm 1 Price"
+              name={name1}
               dot={false}
             />
             <Line
               type="monotone"
-              dataKey="avg_price2"
+              dataKey={dataKey2}
               stroke="#10b981"
               strokeWidth={2}
-              name="Firm 2 Price"
+              name={name2}
               dot={false}
             />
 
-            <ReferenceLine
-              y={benchmarks.bertrand_price}
-              label={{
-                value: 'Bertrand-Nash',
-                fill: '#f59e0b',
-                fontSize: 12,
-                position: 'top',
-                fontWeight: 600
-              }}
-              stroke="#f59e0b"
-              strokeDasharray="5 5"
-              strokeWidth={1.5}
-            />
-            <ReferenceLine
-              y={benchmarks.monopoly_price}
-              label={{
-                value: 'Monopoly (Collusive)',
-                fill: '#ef4444',
-                fontSize: 12,
-                position: 'top',
-                fontWeight: 600
-              }}
-              stroke="#ef4444"
-              strokeDasharray="5 5"
-              strokeWidth={1.5}
-            />
+            {benchmarks && (
+              <>
+                <ReferenceLine
+                y={benchmarks.bertrand_price}
+                label={{
+                  value: 'Bertrand-Nash',
+                  fill: '#f59e0b',
+                  fontSize: 12,
+                  position: 'top',
+                  fontWeight: 600
+                }}
+                stroke="#f59e0b"
+                strokeDasharray="5 5"
+                strokeWidth={1.5}
+              />
+              <ReferenceLine
+                y={benchmarks.monopoly_price}
+                label={{
+                  value: 'Monopoly (Collusive)',
+                  fill: '#ef4444',
+                  fontSize: 12,
+                  position: 'top',
+                  fontWeight: 600
+                }}
+                stroke="#ef4444"
+                strokeDasharray="5 5"
+                strokeWidth={1.5}
+              />
+            </>
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>

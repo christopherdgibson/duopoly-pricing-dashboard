@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import Slider from 'react-input-slider';
 import styles from './Controls.module.css';
 import type { MarketConfig } from '../../types';
@@ -6,22 +6,31 @@ import type { MarketConfig } from '../../types';
 interface ControlsProps {
   config: MarketConfig;
   onChange: (updatedParams: MarketConfig) => void;
+  convergence: boolean;
+  setConvergence: Dispatch<SetStateAction<boolean>>;
   onRunSimulation: () => void;
   isRunning: boolean;
 }
 
-export const Controls: React.FC<ControlsProps> = ({
-  config,
-  onChange,
-  onRunSimulation,
-  isRunning,
-}) => {
+let inputEpisodes: number;
+
+// export const Controls: React.FC<ControlsProps> = ({
+export default function Controls({config, onChange, convergence, setConvergence, onRunSimulation, isRunning}: ControlsProps) {
   const handleInputChange = (field: keyof MarketConfig, value: number) => {
     onChange({
       ...config,
       [field]: value,
     });
   };
+
+  // const toggleConvergence = () => {
+  //   onChange({
+  //     ...config,
+  //     episodes: convergence ? inputEpisodes : 100000,
+  //   });
+  //   setConvergence(prev => !prev);
+  //   console.log('inputEpisodes: ', inputEpisodes);
+  // };
 
   return (
     <div className={styles.controlsCard}>
@@ -152,9 +161,8 @@ export const Controls: React.FC<ControlsProps> = ({
             type="number"
             className={styles.input}
             value={config.episodes}
-            disabled={isRunning}
+            disabled={convergence || isRunning}
             min={100}
-            max={50000}
             step={100}
             onChange={(e) => handleInputChange('episodes', Number(e.target.value))}
           />
@@ -172,10 +180,40 @@ export const Controls: React.FC<ControlsProps> = ({
             value={config.windowSize}
             disabled={isRunning}
             min={1}
-            max={50000}
+            max={config.episodes}
             step={1}
             onChange={(e) => handleInputChange('windowSize', Number(e.target.value))}
           />
+        </div>
+
+        {/* Convergence */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>
+            <span>Convergence</span>
+            <span className={styles.hint}>Episodes for convergence</span>
+          </label>
+          <div className={styles.slider}>
+            <div className={styles.sliderValue}>
+              <input
+                type="checkbox"
+                className={styles.input}
+                disabled={isRunning}
+                onChange={() => setConvergence(prev => !prev)}
+              />
+            </div>
+              <input
+                type="number"
+                className={styles.input}
+                value={config.convergeThreshold}
+                disabled={!convergence || isRunning}
+                min={1}
+                max={config.episodes}
+                step={1}
+                onChange={(e) => handleInputChange('convergeThreshold', Number(e.target.value))}
+              />
+          </div>
+    
+          
         </div>
       </div>
 
@@ -192,4 +230,4 @@ export const Controls: React.FC<ControlsProps> = ({
   );
 };
 
-export default Controls;
+// export default Controls;

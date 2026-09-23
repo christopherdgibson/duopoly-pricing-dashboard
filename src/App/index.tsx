@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import Controls from '../components/Controls';
 import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
-import TrajectoryChart from '../components/TrajectoryChart';
+import { TrajectoryChart } from '../components/TrajectoryChart';
 import { usePyodide } from '../hooks/usePyodide';
-import type { MarketConfig, SimulationResults } from '../types';
+import type { MarketConfig, SimulationConfig, SimulationResults } from '../types';
 import styles from './App.module.css';
 
 const DEFAULT_CONFIG: MarketConfig = {
   episodes: 5000,
   windowSize: 100,
+  convergeThreshold: 50,
   demandIntercept: 100,
   demandSlope: 2,
   marginalCost: 5,
@@ -17,15 +18,17 @@ const DEFAULT_CONFIG: MarketConfig = {
 };
 
 export default function App() {
+  const [convergence, setConvergence] = useState<boolean>(false);
   const [config, setConfig] = useState<MarketConfig>(DEFAULT_CONFIG);
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<Array<SimulationResults> | null>(null);
-  const { isLoading, runSimulation } = usePyodide();
+  const { isLoading, runSimulation } = usePyodide('run_simulation_engine');
 
   const handleRun = async () => {
     setIsRunning(true);
     try {
-      const output = await runSimulation(config);
+      // const simConfig: SimulationConfig = {...config, convergence}
+      const output = await runSimulation(config, convergence);
       setResults(output);
     } catch (err) {
       console.error('Simulation execution failed:', err);
@@ -50,6 +53,8 @@ export default function App() {
       <Controls
         config={config}
         onChange={setConfig}
+        convergence={convergence}
+        setConvergence={setConvergence}
         onRunSimulation={handleRun}
         isRunning={isRunning}
       />
@@ -70,10 +75,30 @@ export default function App() {
           )}
 
           {results.length <= 1 && (
-            <TrajectoryChart
-              trajectory={results[0].trajectory}
-              benchmarks={results[0].benchmarks}
-            />
+            <>
+              <TrajectoryChart
+                trajectory={results[0].trajectory}
+                benchmarks={results[0].benchmarks}
+                dataKey1={"avg_price1"}
+                dataKey2={"avg_price2"}
+                name1={"Firm 1 Price"}
+                name2={"Firm 2 Price"}
+                formatType={"currency"}
+                xLabel={'Episode'}
+                yLabel={'Price (€)'}
+              />
+              <TrajectoryChart
+                title={"Optimal Actions"}
+                trajectory={results[0].trajectory}
+                dataKey1={"avg_optimal_a1"}
+                dataKey2={"avg_optimal_a2"}
+                name1={"Firm 1 Optimal Action"}
+                name2={"Firm 2 Optimal Action"}
+                formatType={"integer"}
+                xLabel={'Episode'}
+                yLabel={'Action'}
+              />
+            </>
           )}
           {results.length > 1 && (
             <>
@@ -81,11 +106,25 @@ export default function App() {
                 title={"Price Trajectory vs Economic Benchmarks - Symmetric Costs"}
                 trajectory={results[0].trajectory}
                 benchmarks={results[0].benchmarks}
+                dataKey1={"avg_price1"}
+                dataKey2={"avg_price2"}
+                name1={"Firm 1 Price"}
+                name2={"Firm 2 Price"}
+                formatType={"currency"}
+                xLabel={'Episode'}
+                yLabel={'Price (€)'}
               />
               <TrajectoryChart
                 title={"Price Trajectory vs Economic Benchmarks - Asymmetric Costs"}
                 trajectory={results[1].trajectory}
                 benchmarks={results[1].benchmarks}
+                dataKey1={"avg_price1"}
+                dataKey2={"avg_price2"}
+                name1={"Firm 1 Price"}
+                name2={"Firm 2 Price"}
+                formatType={"currency"}
+                xLabel={'Episode'}
+                yLabel={'Price (€)'}
               />
             </>
           )}

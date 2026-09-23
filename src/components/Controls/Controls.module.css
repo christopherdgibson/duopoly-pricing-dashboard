@@ -85,6 +85,8 @@
 
 .sliderValue {
   flex: 1;
+  display: flex;
+  justify-content: center;
 }
 .sliderValue ~ * {
   width: 80% !important;

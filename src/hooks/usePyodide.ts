@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { MarketConfig, SimulationResults } from '../types';
 
-export function usePyodide() {
+export function usePyodide(simulation: string) {
   const [pyodide, setPyodide] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -40,17 +40,19 @@ export function usePyodide() {
     initPyodide();
   }, []);
 
-  const runSimulation = async (config: MarketConfig): Promise<Array<SimulationResults> | null> => {
+  const runSimulation = async (config: MarketConfig, convergence: boolean): Promise<Array<SimulationResults> | null> => {
     if (!pyodide) return null;
 
     try {
       // 1. Fetch function reference from Python global scope
-      const runEngine = pyodide.globals.get('run_simulation_engine');
+      const runEngine = pyodide.globals.get(simulation);
 
       // 2. Invoke function directly with typed JavaScript parameters
       const pyProxy = runEngine(
         config.episodes,
         config.windowSize,
+        convergence,
+        config.convergeThreshold,
         config.demandIntercept,
         config.demandSlope,
         config.marginalCost,

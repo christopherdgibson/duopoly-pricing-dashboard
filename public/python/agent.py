@@ -13,13 +13,19 @@ class QLearningAgent:
     def is_exploration(self, epsilon: float) -> bool:
         return np.random.rand() < epsilon
 
+    def random_action(self) -> int:
+        return int(np.random.choice(self.n_prices))
+
+    def optimal_action(self, state: tuple) -> int:
+        p1_idx, p2_idx = state
+        return int(np.argmax(self.q_table[p1_idx, p2_idx]))
+
     def select_action(self, state: tuple, explore: bool | None = None) -> int:
         if explore is None:
             explore = self.is_exploration(self.epsilon)
         if explore:
-            return int(np.random.choice(self.n_prices))
-        p1_idx, p2_idx = state
-        return int(np.argmax(self.q_table[p1_idx, p2_idx]))
+            return self.random_action()
+        return self.optimal_action(state)
 
     def update_q_value(self, state: tuple, action_idx: int, reward: float, next_state: tuple):
         p1_idx, p2_idx = state
