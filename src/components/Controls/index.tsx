@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Slider from 'react-input-slider';
 import styles from './Controls.module.css';
 import type { SimulationPayload } from '../../types';
@@ -11,6 +12,7 @@ interface ControlsProps {
 
 // export const Controls: React.FC<ControlsProps> = ({
 export default function Controls({payload, onChange, onRunSimulation, isRunning}: ControlsProps) {
+  const [asymmetricCost, setAsymmetricCost] = useState<boolean>(false);
 
   const handleConfigChange = <S extends keyof SimulationPayload, F extends keyof SimulationPayload[S]> (
     section: S,
@@ -25,6 +27,13 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
       },
     });
   };
+
+  const toggleAsymmetricCost = (checked:boolean) => {
+    setAsymmetricCost(checked);
+    if (!checked) {
+      handleConfigChange('market', 'marginal_cost_2', payload.market.marginal_cost_1)
+    }
+  }
 
   return (
     <div className={styles.controlsCard}>
@@ -67,8 +76,8 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
         {/* Marginal Cost */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>
-            <span>Marginal Cost (<em>c</em>)</span>
-            <span className={styles.hint}>Unit cost</span>
+            <span>Marginal Cost 1 (<em>c1</em>)</span>
+            <span className={styles.hint}>Firm 1 unit cost</span>
           </label>
           <input
             type="number"
@@ -78,19 +87,29 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
             onChange={(e) => handleConfigChange('market', 'marginal_cost_1', Number(e.target.value))}
           />
         </div>
-        {/* <div className={styles.fieldGroup}>
+         <div className={styles.fieldGroup}>
           <label className={styles.label}>
             <span>Marginal Cost 2 (<em>c2</em>)</span>
-            <span className={styles.hint}>Unit cost</span>
+            <span className={styles.hint}>Firm 2 unit cost</span>
           </label>
-          <input
-            type="number"
-            className={styles.input}
-            value={payload.market.marginal_cost_2}
-            disabled={isRunning}
-            onChange={(e) => handleConfigChange('market', 'marginal_cost_2', Number(e.target.value))}
-          />
-        </div> */}
+          <div className={styles.slider}>
+            <div className={styles.sliderValue}>
+              <input
+                type="checkbox"
+                className={styles.input}
+                disabled={isRunning}
+                onChange={(e) => toggleAsymmetricCost(e.target.checked)}
+              />
+            </div>
+              <input
+                type="number"
+                className={styles.input}
+                value={payload.market.marginal_cost_2}
+                disabled={!asymmetricCost || isRunning}
+                onChange={(e) => handleConfigChange('market', 'marginal_cost_2', Number(e.target.value))}
+              />
+          </div>
+        </div>
       </div>
 
       <h3 className={styles.subTitle}>Learning Parameters</h3>
@@ -206,7 +225,6 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
                 className={styles.input}
                 disabled={isRunning}
                 onChange={(e) => handleConfigChange('run', 'convergence', e.target.checked)}
-                // onChange={() => setConvergence(prev => !prev)}
               />
             </div>
               <input
@@ -220,8 +238,6 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
                 onChange={(e) => handleConfigChange('run', 'converge_threshold', Number(e.target.value))}
               />
           </div>
-    
-          
         </div>
       </div>
 
