@@ -76,20 +76,24 @@
   font-weight: 400;
 }
 
-.slider {
+.inputGroup {
   display: flex;
   flex-direction: row;
   gap: 10px;
   align-items: center;
 }
 
-.sliderValue {
+.inputLeft {
   flex: 1;
   display: flex;
   justify-content: center;
 }
-.sliderValue ~ * {
+.inputLeft ~ * {
   width: 80% !important;
+}
+
+.inputSlider {
+  cursor: pointer;
 }
 
 /* Inputs & Selects */

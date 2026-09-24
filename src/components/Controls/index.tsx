@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Slider from 'react-input-slider';
 import styles from './Controls.module.css';
 import type { SimulationPayload } from '../../types';
 
@@ -92,8 +91,8 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
             <span>Marginal Cost 2 (<em>c2</em>)</span>
             <span className={styles.hint}>Firm 2 unit cost</span>
           </label>
-          <div className={styles.slider}>
-            <div className={styles.sliderValue}>
+          <div className={styles.inputGroup}>
+            <div className={styles.inputLeft}>
               <input
                 type="checkbox"
                 className={styles.input}
@@ -120,8 +119,8 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
             <span>Learning Rate (<em>&alpha;</em>)</span>
             <span className={styles.hint}>0.01 - 1.0</span>
           </label>
-          <div className={styles.slider}>
-            <div className={styles.sliderValue}>
+          <div className={styles.inputGroup}>
+            <div className={styles.inputLeft}>
               <input
                 type="number"
                 className={styles.input}
@@ -133,14 +132,14 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
                 onChange={(e) => handleConfigChange('market', 'alpha', Number(e.target.value))}
               />
             </div>
-            <Slider
-              axis="x"
-              x={payload.market.alpha}
-              disabled={isRunning}
-              xmin={0.01}
-              xmax={1.0}
-              xstep={0.01}
-              onChange={(e) => handleConfigChange('market', 'alpha', Number(e.x.toFixed(2)))}/>
+            <input
+              className={styles.inputSlider}
+              type="range"
+              value={payload.market.alpha}
+              min={0.01}
+              max={1.0}
+              step={0.01}
+              onChange={(e) => handleConfigChange('market', 'alpha', Number(parseFloat(e.target.value).toFixed(2)))} />
           </div>
         </div>
 
@@ -150,8 +149,8 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
             <span>Exploration (<em>&epsilon;</em>)</span>
             <span className={styles.hint}>Initial rate</span>
           </label>
-          <div className={styles.slider}>
-            <div className={styles.sliderValue}>
+          <div className={styles.inputGroup}>
+            <div className={styles.inputLeft}>
               <input
                 type="number"
                 className={styles.input}
@@ -163,14 +162,15 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
                 onChange={(e) => handleConfigChange('market', 'epsilon', Number(e.target.value))}
               />
             </div>
-            <Slider
-              axis="x"
-              x={payload.market.epsilon}
+            <input
+              className={styles.inputSlider}
+              type="range"
+              value={payload.market.epsilon}
               disabled={isRunning}
-              xmin={0.0}
-              xmax={1.0}
-              xstep={0.05}
-              onChange={(e) => handleConfigChange('market', 'epsilon', Number(e.x.toFixed(2)))}/>
+              min={0.0}
+              max={1.0}
+              step={0.05}
+              onChange={(e) => handleConfigChange('market', 'epsilon', Number(parseFloat(e.target.value).toFixed(2)))}/>
           </div>
         </div>
       </div>
@@ -218,8 +218,8 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
             <span>Convergence</span>
             <span className={styles.hint}>Episodes for convergence</span>
           </label>
-          <div className={styles.slider}>
-            <div className={styles.sliderValue}>
+          <div className={styles.inputGroup}>
+            <div className={styles.inputLeft}>
               <input
                 type="checkbox"
                 className={styles.input}
