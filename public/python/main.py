@@ -2,8 +2,7 @@ import numpy as np
 from simulation import MarketSimulation
 from config import MarketParams, RunConfig, SimulationConfig
 
-def run_simulation_engine(config_dict: dict):
-
+def run_simulation_engine(config_dict: dict, include_trajectory: bool = True):
     # Convert Pyodide JsProxy objects to native Python dicts
     if hasattr(config_dict, "to_py"):
         config_dict = config_dict.to_py()
@@ -19,6 +18,7 @@ def run_simulation_engine(config_dict: dict):
     # 2. Use the factory method to instantiate the simulation instance
     sim = MarketSimulation.from_params(config.market)
 
+    min_converge_episodes = 5000
     simResults = []
 
     for ep in range(config.run.episodes):
@@ -59,22 +59,14 @@ def run_simulation_engine(config_dict: dict):
         sim.all_r2.append(r2)
 
         # Log rolling average trajectory window
-        if (ep + 1) % config.run.window_size == 0:
-            start = ep + 1 - config.run.window_size
-            sim.trajectory.append({
-                "episode": ep + 1,
-                "avg_price1": float(np.mean(sim.all_p1[start:ep + 1])),
-                "avg_price2": float(np.mean(sim.all_p2[start:ep + 1])),
-                "avg_profit1": float(np.mean(sim.all_r1[start:ep + 1])),
-                "avg_profit2": float(np.mean(sim.all_r2[start:ep + 1])),
-                "avg_optimal_a1": float(np.mean(sim.all_optimal_a1[start:ep + 1])),
-                "avg_optimal_a2": float(np.mean(sim.all_optimal_a2[start:ep + 1])),
-            })
+        if include_trajectory:
+            append_trajectory(sim, config.run.window_size, ep)
 
         # Early break if convergence selected
         if (
-            config.run.convergence 
-            and sim.streak1 >= config.run.converge_threshold 
+            config.run.convergence
+            and ep >= min_converge_episodes
+            and sim.streak1 >= config.run.converge_threshold
             and sim.streak2 >= config.run.converge_threshold
         ):
             break
@@ -91,14 +83,14 @@ def run_simulation_engine(config_dict: dict):
     r2_mean = float(np.mean(sim.all_r2[-last_10_pct:]))
 
     final_averages = {
-        "final_avg_p1": round(p1_mean, 4),
-        "final_avg_p2": round(p2_mean, 4),
-        "final_avg_joint_price": round((p1_mean + p2_mean) / 2, 4),
-        "final_avg_profit1": round(r1_mean, 4),
-        "final_avg_profit2": round(r2_mean, 4),
+        "final_avg_p1": round(p1_mean, 2),
+        "final_avg_p2": round(p2_mean, 2),
+        "final_avg_joint_price": round((p1_mean + p2_mean) / 2, 2),
+        "final_avg_profit1": round(r1_mean, 2),
+        "final_avg_profit2": round(r2_mean, 2),
         "final_streak1": sim.streak1,
         "final_streak2": sim.streak2,
-        "episodes_to_converge": actual_episodes if run_config.convergence else None
+        "episodes_to_converge": actual_episodes if config.run.convergence else None
     }
 
     simResults.append({
@@ -108,6 +100,19 @@ def run_simulation_engine(config_dict: dict):
     })
 
     return simResults
+
+def append_trajectory(sim: MarketSimulation, window_size: int, ep: int):
+    if (ep + 1) % window_size == 0:
+        start = ep + 1 - window_size
+        sim.trajectory.append({
+            "episode": ep + 1,
+            "avg_price1": float(np.mean(sim.all_p1[start:ep + 1])),
+            "avg_price2": float(np.mean(sim.all_p2[start:ep + 1])),
+            "avg_profit1": float(np.mean(sim.all_r1[start:ep + 1])),
+            "avg_profit2": float(np.mean(sim.all_r2[start:ep + 1])),
+            "avg_optimal_a1": float(np.mean(sim.all_optimal_a1[start:ep + 1])),
+            "avg_optimal_a2": float(np.mean(sim.all_optimal_a2[start:ep + 1])),
+        })
 
 # def run_simulation_engine_asym(
 #     episodes: int,
