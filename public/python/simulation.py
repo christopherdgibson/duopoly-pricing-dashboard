@@ -24,11 +24,12 @@ class MarketSimulation:
     trajectory: list[dict] = field(default_factory=list)
 
     @classmethod
-    def from_params(cls, params: MarketParams) -> "MarketSimulation":
+    def from_params(cls, params: MarketParams, n_prices: int = 15, allow_sub_cost: bool = False) -> "MarketSimulation":
         env = DuopolyPricingEnv(
             a=params.demand_intercept, 
             b=params.demand_slope, 
-            cost=[params.marginal_cost_1, params.marginal_cost_2]
+            cost=[params.marginal_cost_1, params.marginal_cost_2],
+            price_grid = DuopolyPricingEnv.generate_price_grid(params.demand_intercept, params.marginal_cost_1, params.marginal_cost_2, n_prices, allow_sub_cost)
         )
         agent1 = QLearningAgent(n_prices=env.n_prices, alpha=params.alpha, epsilon=params.epsilon)
         agent2 = QLearningAgent(n_prices=env.n_prices, alpha=params.alpha, epsilon=params.epsilon)

@@ -14,24 +14,45 @@ class MarketBenchmarks:
         else:
             self.c1 = self.c2 = float(cost)
 
-    # Todo: Return Bertrand and Monopoly cost differentiated prices
     @property
     def bertrand_prices(self) -> tuple[float, float]:
-        """Calculates asymmetric Bertrand-Nash equilibrium prices."""
-        # For linear demand: p_i = (2*a + 2*b*c_i + b*c_j) / (3*b)
-        p1 = (2 * self.a + 2 * self.b * self.c1 + self.b * self.c2) / (3 * self.b)
-        p2 = (2 * self.a + 2 * self.b * self.c2 + self.b * self.c1) / (3 * self.b)
+        """Asymmetric Bertrand-Nash equilibrium prices."""
+        p1 = self.bertrand_price(self.c1, self.c2)
+        p2 = self.bertrand_price(self.c2, self.c1)
         return p1, p2
-    
-    @property
-    def bertrand_price(self) -> float:
-        """Non-cooperative Bertrand-Nash Equilibrium Price."""
-        return (self.a + self.c1 * (1 + self.b)) / (2 + self.b)
 
     @property
-    def monopoly_price(self) -> float:
+    def monopoly_prices(self) -> float:
+        """Monopoly Maximizing Prices."""
+        p1 = self.monopoly_price(self.c1)
+        p2 = self.monopoly_price(self.c2)
+        return p1, p2
+
+    @property
+    def summary(self) -> dict:
+        p_b = max(self.bertrand_prices)
+        p_m = max(self.monopoly_prices)
+        
+        prof_b = max(self.compute_profit(p_b, p_b))
+        prof_m = max(self.compute_profit(p_m, p_m))
+        
+        return {
+            "marginal_cost_1": self.c1,
+            "marginal_cost_2": self.c2,
+            "bertrand_price": round(p_b, 2),
+            "bertrand_profit_per_firm": round(prof_b, 2),
+            "monopoly_price": round(p_m, 2),
+            "monopoly_profit_per_firm": round(prof_m, 2)
+        }
+    
+    def bertrand_price(self, ci: float, cj: float) -> float:
+        """Non-cooperative Bertrand-Nash Equilibrium Price."""
+        # For linear demand: p_i = (a / (2 + b)) + ((1 + b) * (2 * (1 + b) * ci + b * cj)/((2 + 3 * b) * (2 + b)))
+        return (self.a/(2 + self.b))  + ((1 + self.b) * (2 * (1 + self.b) * ci + self.b * cj)/((2 + 3 * self.b) * (2 + self.b)))
+
+    def monopoly_price(self, ci: float) -> float:
         """Cooperative / Monopoly Joint-Profit Maximizing Price."""
-        return (self.a + self.c1) / 2.0
+        return (self.a + ci) / 2.0
 
     def compute_profit(self, p1: float, p2: float) -> tuple[float, float]:
         """Calculates exact stage-game profits given arbitrary prices p1 and p2."""
@@ -39,23 +60,8 @@ class MarketBenchmarks:
         q2 = max(0.0, self.a - p2 + self.b * (p1 - p2))
         
         profit1 = (p1 - self.c1) * q1
-        profit2 = (p2 - self.c1) * q2
+        profit2 = (p2 - self.c2) * q2
         return profit1, profit2
-
-    def summary(self) -> dict:
-        p_b = self.bertrand_price
-        p_m = self.monopoly_price
-        
-        prof_b1, prof_b2 = self.compute_profit(p_b, p_b)
-        prof_m1, prof_m2 = self.compute_profit(p_m, p_m)
-        
-        return {
-            "marginal_cost": self.c1,
-            "bertrand_price": round(p_b, 4),
-            "bertrand_profit_per_firm": round(prof_b1, 4),
-            "monopoly_price": round(p_m, 4),
-            "monopoly_profit_per_firm": round(prof_m1, 4)
-        }
 
 if __name__ == "__main__":
     benchmarks = MarketBenchmarks(a=100.0, b=2.0, cost=5.0)

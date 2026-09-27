@@ -3,7 +3,7 @@ import Controls from '../components/Controls';
 import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
 import { TrajectoryChart } from '../components/TrajectoryChart';
 import { usePyodide } from '../hooks/usePyodide';
-import type { MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
+import type { FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 import styles from './App.module.css';
 
 const DEFAULT_MARKET_CONFIG: MarketConfig = {
@@ -25,6 +25,7 @@ const DEFAULT_RUN_CONFIG: RunConfig = {
 export default function App() {
   const [payload, setPayload] = useState<SimulationPayload>({market: DEFAULT_MARKET_CONFIG, run: DEFAULT_RUN_CONFIG});
   const [isRunning, setIsRunning] = useState(false);
+  const [benchmarks, setBenchmarks] = useState<Array<FirmBenchmarkResults>>(getBenchmarks(DEFAULT_MARKET_CONFIG));
   const [results, setResults] = useState<Array<SimulationResults> | null>(null);
   const { isLoading, runSimulation } = usePyodide('run_simulation_engine');
 
@@ -39,6 +40,55 @@ export default function App() {
       setIsRunning(false);
     }
   };
+
+  const handleChangeInputs = (inputs: SimulationPayload) => {
+    setPayload(inputs);
+    updateBenchmarks(inputs.market);
+  }
+
+  function updateBenchmarks(market: MarketConfig): void {
+    setBenchmarks(getBenchmarks(market));
+  }
+
+  function getBenchmarks(market: MarketConfig): Array<FirmBenchmarkResults> {
+    const a = market.demand_intercept;
+    const b = market.demand_slope;
+    const c1 = market.marginal_cost_1;
+    const c2 = market.marginal_cost_2;
+
+    const priceBertrand = (ci: number, cj: number) => {
+      return (a / (2 + b)) + ((1 + b) * (2 * (1 + b) * ci + b * cj)/((2 + 3 * b) * (2 + b)));
+    }
+
+    const priceMonopoly = (ci: number) => {
+      return (a + ci) / 2.0;
+    }
+
+    const pb1 = priceBertrand(c1, c2);
+    const pm1 = priceMonopoly(c1);
+
+    const benchmarks = [
+      {
+        firm: 1,
+        marginal_cost: c1,
+        bertrand_price: pb1,
+        monopoly_price: pm1
+      },
+    ];
+
+    if (c1 !== c2) {
+      const pb2 = priceBertrand(c2, c1);
+      const pm2 = priceMonopoly(c2);
+      benchmarks.push({
+        firm: 2,
+        marginal_cost: c2,
+        bertrand_price: pb2,
+        monopoly_price: pm2,
+      });
+    }
+        
+    return benchmarks;
+  }
 
   if (isLoading) {
     return (
@@ -55,15 +105,15 @@ export default function App() {
 
       <Controls
         payload={payload}
-        onChange={setPayload}
+        onChange={handleChangeInputs}
         onRunSimulation={handleRun}
         isRunning={isRunning}
       />
-
+      
+      <BenchmarkResultsCard benchmarks={benchmarks} />
+      
       {results && (
         <>
-          <BenchmarkResultsCard benchmarks={results[0].benchmarks} />
-          
           {results.length <= 1 && (
             <SimulationResultsCard final_averages={results[0].final_averages}/>
           )}

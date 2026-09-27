@@ -95,7 +95,7 @@ def run_simulation_engine(config_dict: dict, include_trajectory: bool = True):
 
     simResults.append({
         "trajectory": sim.trajectory,
-        "benchmarks": sim.benchmarks.summary(),
+        "benchmarks": sim.benchmarks.summary,
         "final_averages": final_averages
     })
 
@@ -211,7 +211,7 @@ def append_trajectory(sim: MarketSimulation, window_size: int, ep: int):
 
 #         simResults.append({
 #             "trajectory": sim.trajectory,
-#             "benchmarks": sim.benchmarks.summary(),
+#             "benchmarks": sim.benchmarks.summary,
 #             "final_averages": final_averages
 #         })
 

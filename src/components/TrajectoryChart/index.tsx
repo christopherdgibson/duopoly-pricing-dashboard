@@ -12,12 +12,12 @@ import {
 
 import { RenderableText } from 'recharts';
 
-import type { BenchmarkProps, TrajectoryProps } from '../../types';
+import type { FirmBenchmarkResults, TrajectoryProps } from '../../types';
 import styles from './TrajectoryChart.module.css';
 
 interface TrajectoryChartProps {
   trajectory: Array<TrajectoryProps>;
-  benchmarks?: BenchmarkProps;
+  benchmarks?: Array<FirmBenchmarkResults>;
   title?: string;
   dataKey1: keyof TrajectoryProps;
   dataKey2: keyof TrajectoryProps;
@@ -95,10 +95,10 @@ export function TrajectoryChart({ title = "Price Trajectory vs Economic Benchmar
               dot={false}
             />
 
-            {benchmarks && (
+            {benchmarks && benchmarks.length > 0 && (
               <>
                 <ReferenceLine
-                y={benchmarks.bertrand_price}
+                y={benchmarks[0].bertrand_price}
                 label={{
                   value: 'Bertrand-Nash',
                   fill: '#f59e0b',
@@ -111,7 +111,7 @@ export function TrajectoryChart({ title = "Price Trajectory vs Economic Benchmar
                 strokeWidth={1.5}
               />
               <ReferenceLine
-                y={benchmarks.monopoly_price}
+                y={benchmarks[0].monopoly_price}
                 label={{
                   value: 'Monopoly (Collusive)',
                   fill: '#ef4444',

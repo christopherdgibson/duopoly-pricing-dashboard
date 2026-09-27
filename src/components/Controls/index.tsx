@@ -9,7 +9,6 @@ interface ControlsProps {
   isRunning: boolean;
 }
 
-// export const Controls: React.FC<ControlsProps> = ({
 export default function Controls({payload, onChange, onRunSimulation, isRunning}: ControlsProps) {
   const [asymmetricCost, setAsymmetricCost] = useState<boolean>(false);
 
@@ -27,12 +26,24 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
     });
   };
 
+  const handleCostChange = (value: number) => {
+    onChange({
+      ...payload,
+      market: {
+        ...payload.market,
+        marginal_cost_1: value,
+        // If symmetric, automatically sync cost 2 to cost 1
+        ...(!asymmetricCost && { marginal_cost_2: value }),
+      },
+    });
+  };
+
   const toggleAsymmetricCost = (checked:boolean) => {
     setAsymmetricCost(checked);
     if (!checked) {
       handleConfigChange('market', 'marginal_cost_2', payload.market.marginal_cost_1)
     }
-  }
+  };
 
   return (
     <div className={styles.controlsCard}>
@@ -51,6 +62,7 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
           <input
             type="number"
             className={styles.input}
+            min={0}
             value={payload.market.demand_intercept}
             disabled={isRunning}
             onChange={(e) => handleConfigChange('market', 'demand_intercept', Number(e.target.value))}
@@ -81,9 +93,10 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
           <input
             type="number"
             className={styles.input}
+            min={0}
             value={payload.market.marginal_cost_1}
             disabled={isRunning}
-            onChange={(e) => handleConfigChange('market', 'marginal_cost_1', Number(e.target.value))}
+            onChange={(e) => handleCostChange(Number(e.target.value))}
           />
         </div>
          <div className={styles.fieldGroup}>
@@ -103,6 +116,7 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
               <input
                 type="number"
                 className={styles.input}
+                min={0}
                 value={payload.market.marginal_cost_2}
                 disabled={!asymmetricCost || isRunning}
                 onChange={(e) => handleConfigChange('market', 'marginal_cost_2', Number(e.target.value))}

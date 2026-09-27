@@ -30,12 +30,11 @@ export interface TrajectoryProps {
   avg_optimal_a2: number;
 }
 
-export interface BenchmarkProps {
+export interface FirmBenchmarkResults {
+  firm: number;
   marginal_cost: number;
   bertrand_price: number;
-  bertrand_profit_per_firm: number;
   monopoly_price: number;
-  monopoly_profit_per_firm: number;
 }
 
 export interface FinalAverageProps {
@@ -51,7 +50,7 @@ export interface FinalAverageProps {
 
 export interface SimulationResults {
   trajectory: Array<TrajectoryProps>;
-  benchmarks: BenchmarkProps;
+  benchmarks: Array<FirmBenchmarkResults>;
   final_averages: FinalAverageProps;
 }
 
