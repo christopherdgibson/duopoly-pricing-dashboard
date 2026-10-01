@@ -1,5 +1,6 @@
 {
   "python.analysis.extraPaths": [
-    "${workspaceFolder}/public/python"
+    "${workspaceFolder}/public/python",
+    "${workspaceFolder}/public/python/utils"
   ]
 }
