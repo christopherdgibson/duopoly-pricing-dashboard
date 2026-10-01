@@ -27,7 +27,7 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [benchmarks, setBenchmarks] = useState<Array<FirmBenchmarkResults> | null>(null);
   const [results, setResults] = useState<Array<SimulationResults> | null>(null);
-  const { isLoading, runSimulation, getBenchmarks } = usePyodide('run_simulation_engine');
+  const { isLoading, getBenchmarks, runSimulation } = usePyodide();
 
   useEffect(() => {
     let isMounted = true;

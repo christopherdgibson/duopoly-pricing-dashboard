@@ -1,11 +1,19 @@
 import { useCallback, useState, useEffect } from 'react';
 import type { FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 
-export function usePyodide(simulation: string) {
+interface PyFunctionProps {
+  fnName: string;
+  args?: any[];
+}
+
+type CallPyFunction = <T,>(props: PyFunctionProps) => Promise<T | null>;
+
+export function usePyodide() {
   const [pyodide, setPyodide] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const base = import.meta.env.BASE_URL;
 
+  // Initialize Pyodide WASM Runtime
   useEffect(() => {
     async function initPyodide() {
       try {
@@ -43,66 +51,73 @@ export function usePyodide(simulation: string) {
     initPyodide();
   }, []);
 
-  const getBenchmarks = useCallback(
-    async (market: MarketConfig): Promise<Array<FirmBenchmarkResults> | null> => {
-    if (!pyodide) return null;
-
-    let getBenchmarks: any = null;
-    let pyProxy: any = null;
-
-    try {
-      // 1. Fetch function reference from Python global scope
-      getBenchmarks = pyodide.globals.get('get_benchmarks');
-
-      // 2. Invoke function directly with typed JavaScript parameters
-      pyProxy = getBenchmarks(market);
-
-      // 3. Convert Pyodide dict/proxy object to native JavaScript object
-      const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as Array<FirmBenchmarkResults>;
-
-      return jsResult;
-    } catch (error) {
-      console.error('Python execution error:', error);
-      throw error;
-    } finally {
-      // 4. Destroy proxy to prevent WASM memory leaks
-      if (pyProxy) pyProxy.destroy();
-      if (getBenchmarks) getBenchmarks.destroy();
-    }
-  }, [pyodide]
-);
-
-  const runSimulation = async (market: MarketConfig, run: RunConfig): Promise<Array<SimulationResults> | null> => {
-    if (!pyodide) return null;
-
-    let runEngine: any = null;
-    let pyProxy: any = null;
-
-    try {
-      // 1. Fetch function reference from Python global scope
-      runEngine = pyodide.globals.get(simulation);
-
-      // 2. Construct function input object
-      const payload: SimulationPayload = {
-        market, run
+  // Centralized Pyodide Invocation Wrapper
+  const callPyFunction = useCallback(
+    (async <T,>({ fnName, args = [] }: PyFunctionProps): Promise<T | null> => {
+      if (!pyodide) {
+        console.warn(`Attempted to call ${fnName} before Pyodide finished loading.`);
+        return null;
       }
 
-      // 3. Invoke function directly with typed JavaScript parameters
-      pyProxy = runEngine(payload);
+      let pyFunction: any = null;
+      let pyProxy: any = null;
 
-      // 4. Convert Pyodide dict/proxy object to native JavaScript object
-      const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as Array<SimulationResults>;
+      try {
+        // 1. Fetch function reference from Python global namespace
+        pyFunction = pyodide.globals.get(fnName);
 
-      return jsResult;
-    } catch (error) {
-      console.error('Python execution error:', error);
-      throw error;
-    } finally {
-      // 5. Destroy proxy to prevent WASM memory leaks
-      pyProxy.destroy();
-      runEngine.destroy();
-    }
-  };
+        if (!pyFunction) {
+          throw new Error(`Python function '${fnName}' was not found in global scope.`);
+        }
 
-  return { isLoading, runSimulation, getBenchmarks };
+        // 2. Invoke function directly with typed JavaScript parameters
+        pyProxy = pyFunction(...args);
+
+        // 3. Convert Pyodide Proxy object to native JavaScript Types
+        const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as T;
+
+        return jsResult;
+      } catch (error) {
+        console.error(`Error executing Python function '${fnName}':`, error);
+        throw error;
+      } finally {
+        // 4. Clean up WASM proxies to prevent memory leaks
+        if (pyProxy && typeof pyProxy.destroy === 'function') pyProxy.destroy();
+        if (pyFunction && typeof pyFunction.destroy === 'function') pyFunction.destroy();
+
+        // 5. Run Python Garbage Collection
+        try {
+          pyodide.runPython('import gc; gc.collect()');
+        } catch (gcErr) {
+          console.warn('Garbage collection trigger failed:', gcErr);
+        }
+      }
+    }) as CallPyFunction, [pyodide]
+  );
+
+  const getBenchmarks = useCallback(
+    async (market: MarketConfig): Promise<Array<FirmBenchmarkResults> | null> => {
+      const benchmarks = await callPyFunction<Array<FirmBenchmarkResults>>({
+        fnName: 'get_benchmarks',
+        args: [market],
+      });
+
+      return benchmarks;
+    }, [callPyFunction]
+);
+
+  const runSimulation = useCallback(
+    async (market: MarketConfig, run: RunConfig): Promise<Array<SimulationResults> | null> => {
+      const payload: SimulationPayload = {market, run}
+
+      const results = await callPyFunction<Array<SimulationResults>>({
+        fnName: 'run_simulation_engine',
+        args: [payload],
+      });
+
+      return results;
+    }, [callPyFunction]
+);
+
+  return { isLoading, getBenchmarks, runSimulation };
 }
