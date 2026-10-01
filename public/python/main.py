@@ -1,5 +1,6 @@
 import numpy as np
 from simulation import MarketSimulation
+from benchmarks import MarketBenchmarks
 from config import MarketParams, RunConfig, SimulationConfig
 
 def run_simulation_engine(config_dict: dict, include_trajectory: bool = True):
@@ -95,7 +96,6 @@ def run_simulation_engine(config_dict: dict, include_trajectory: bool = True):
 
     simResults.append({
         "trajectory": sim.trajectory,
-        "benchmarks": sim.benchmarks.summary,
         "final_averages": final_averages
     })
 
@@ -113,6 +113,18 @@ def append_trajectory(sim: MarketSimulation, window_size: int, ep: int):
             "avg_optimal_a1": float(np.mean(sim.all_optimal_a1[start:ep + 1])),
             "avg_optimal_a2": float(np.mean(sim.all_optimal_a2[start:ep + 1])),
         })
+
+def get_benchmarks(config_dict: dict) -> tuple[float, float]:
+    # Convert Pyodide JsProxy objects to native Python dicts
+    if hasattr(config_dict, "to_py"):
+        config_dict = config_dict.to_py()
+
+    # Unpack JS dictionaries directly into dataclass constructors
+    market_params = MarketParams(**config_dict)
+    market = MarketBenchmarks.from_params(market_params)
+
+    return market.benchmarks
+
 
 # def run_simulation_engine_asym(
 #     episodes: int,

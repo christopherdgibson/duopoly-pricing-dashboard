@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import type { MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
+import { useCallback, useState, useEffect } from 'react';
+import type { FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 
 export function usePyodide(simulation: string) {
   const [pyodide, setPyodide] = useState<any>(null);
@@ -43,47 +43,66 @@ export function usePyodide(simulation: string) {
     initPyodide();
   }, []);
 
-  const runSimulation = async (market: MarketConfig, run: RunConfig): Promise<Array<SimulationResults> | null> => {
+  const getBenchmarks = useCallback(
+    async (market: MarketConfig): Promise<Array<FirmBenchmarkResults> | null> => {
     if (!pyodide) return null;
+
+    let getBenchmarks: any = null;
+    let pyProxy: any = null;
 
     try {
       // 1. Fetch function reference from Python global scope
-      const runEngine = pyodide.globals.get(simulation);
+      getBenchmarks = pyodide.globals.get('get_benchmarks');
 
-      // 2. Construct function input object
-      const payload: SimulationPayload = {
-        market: {
-          demand_intercept: market.demand_intercept,
-          demand_slope: market.demand_slope,
-          marginal_cost_1: market.marginal_cost_1,
-          marginal_cost_2: market.marginal_cost_2,
-          alpha: market.alpha,
-          epsilon: market.epsilon,
-        },
-        run: {
-          episodes: run.episodes,
-          window_size: run.window_size,
-          convergence: run.convergence,
-          converge_threshold: run.converge_threshold,
-        }
-      };
+      // 2. Invoke function directly with typed JavaScript parameters
+      pyProxy = getBenchmarks(market);
 
-      // 3. Invoke function directly with typed JavaScript parameters
-      const pyProxy = runEngine(payload);
-
-      // 4. Convert Pyodide dict/proxy object to native JavaScript object
-      const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as Array<SimulationResults>;
-
-      // 5. Destroy proxy to prevent WASM memory leaks
-      pyProxy.destroy();
-      runEngine.destroy();
+      // 3. Convert Pyodide dict/proxy object to native JavaScript object
+      const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as Array<FirmBenchmarkResults>;
 
       return jsResult;
     } catch (error) {
       console.error('Python execution error:', error);
       throw error;
+    } finally {
+      // 4. Destroy proxy to prevent WASM memory leaks
+      if (pyProxy) pyProxy.destroy();
+      if (getBenchmarks) getBenchmarks.destroy();
+    }
+  }, [pyodide]
+);
+
+  const runSimulation = async (market: MarketConfig, run: RunConfig): Promise<Array<SimulationResults> | null> => {
+    if (!pyodide) return null;
+
+    let runEngine: any = null;
+    let pyProxy: any = null;
+
+    try {
+      // 1. Fetch function reference from Python global scope
+      runEngine = pyodide.globals.get(simulation);
+
+      // 2. Construct function input object
+      const payload: SimulationPayload = {
+        market, run
+      }
+
+      // 3. Invoke function directly with typed JavaScript parameters
+      pyProxy = runEngine(payload);
+
+      // 4. Convert Pyodide dict/proxy object to native JavaScript object
+      const jsResult = pyProxy.toJs({ dict_converter: Object.fromEntries }) as Array<SimulationResults>;
+
+      return jsResult;
+    } catch (error) {
+      console.error('Python execution error:', error);
+      throw error;
+    } finally {
+      // 5. Destroy proxy to prevent WASM memory leaks
+      pyProxy.destroy();
+      runEngine.destroy();
     }
   };
 
-  return { isLoading, runSimulation };
+  return { isLoading, runSimulation, getBenchmarks };
 }

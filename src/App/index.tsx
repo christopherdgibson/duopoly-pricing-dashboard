@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Controls from '../components/Controls';
 import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
 import { TrajectoryChart } from '../components/TrajectoryChart';
@@ -25,9 +25,47 @@ const DEFAULT_RUN_CONFIG: RunConfig = {
 export default function App() {
   const [payload, setPayload] = useState<SimulationPayload>({market: DEFAULT_MARKET_CONFIG, run: DEFAULT_RUN_CONFIG});
   const [isRunning, setIsRunning] = useState(false);
-  const [benchmarks, setBenchmarks] = useState<Array<FirmBenchmarkResults>>(getBenchmarks(DEFAULT_MARKET_CONFIG));
+  const [benchmarks, setBenchmarks] = useState<Array<FirmBenchmarkResults> | null>(null);
   const [results, setResults] = useState<Array<SimulationResults> | null>(null);
-  const { isLoading, runSimulation } = usePyodide('run_simulation_engine');
+  const { isLoading, runSimulation, getBenchmarks } = usePyodide('run_simulation_engine');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function updateBenchmarks(market: MarketConfig) {
+      // If Pyodide is still loading, fallback to local JS calculations
+      if (isLoading) {
+        setBenchmarks(getBenchmarksJS(market));
+        return;
+      }
+
+      try {
+        const pyBenchmarks = await getBenchmarks(market);
+        
+        if (isMounted) {
+          if (pyBenchmarks) {
+            setBenchmarks(pyBenchmarks);
+          } else {
+            // Fallback to local JS if Python returned null
+            setBenchmarks(getBenchmarksJS(market));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to calculate Pyodide summary prices, falling back to local JS:', err);
+        if (isMounted) {
+          setBenchmarks(getBenchmarksJS(market));
+        }
+      }
+    }
+
+    updateBenchmarks(payload.market);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    isLoading, payload.market, getBenchmarks
+  ]);
 
   const handleRun = async () => {
     setIsRunning(true);
@@ -41,16 +79,7 @@ export default function App() {
     }
   };
 
-  const handleChangeInputs = (inputs: SimulationPayload) => {
-    setPayload(inputs);
-    updateBenchmarks(inputs.market);
-  }
-
-  function updateBenchmarks(market: MarketConfig): void {
-    setBenchmarks(getBenchmarks(market));
-  }
-
-  function getBenchmarks(market: MarketConfig): Array<FirmBenchmarkResults> {
+  function getBenchmarksJS(market: MarketConfig): Array<FirmBenchmarkResults> {
     const a = market.demand_intercept;
     const b = market.demand_slope;
     const c1 = market.marginal_cost_1;
@@ -105,12 +134,12 @@ export default function App() {
 
       <Controls
         payload={payload}
-        onChange={handleChangeInputs}
+        onChange={setPayload}
         onRunSimulation={handleRun}
         isRunning={isRunning}
       />
       
-      <BenchmarkResultsCard benchmarks={benchmarks} />
+      {benchmarks && <BenchmarkResultsCard benchmarks={benchmarks} />}
       
       {results && (
         <>
@@ -129,7 +158,7 @@ export default function App() {
             <>
               <TrajectoryChart
                 trajectory={results[0].trajectory}
-                benchmarks={results[0].benchmarks}
+                benchmarks={benchmarks ?? undefined}
                 dataKey1={"avg_price1"}
                 dataKey2={"avg_price2"}
                 name1={"Firm 1 Price"}
@@ -156,7 +185,7 @@ export default function App() {
               <TrajectoryChart
                 title={"Price Trajectory vs Economic Benchmarks - Symmetric Costs"}
                 trajectory={results[0].trajectory}
-                benchmarks={results[0].benchmarks}
+                benchmarks={benchmarks ?? undefined}
                 dataKey1={"avg_price1"}
                 dataKey2={"avg_price2"}
                 name1={"Firm 1 Price"}
@@ -168,7 +197,7 @@ export default function App() {
               <TrajectoryChart
                 title={"Price Trajectory vs Economic Benchmarks - Asymmetric Costs"}
                 trajectory={results[1].trajectory}
-                benchmarks={results[1].benchmarks}
+                benchmarks={benchmarks ?? undefined}
                 dataKey1={"avg_price1"}
                 dataKey2={"avg_price2"}
                 name1={"Firm 1 Price"}

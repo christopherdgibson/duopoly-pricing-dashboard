@@ -20,8 +20,9 @@ class RunConfig:
     @classmethod
     def from_params(cls, params) -> "RunConfig":
         planned_episodes = int(params.episodes)
+        max_episodes = int(1E7)
         return cls(
-            episodes=int(1E+7) if params.convergence else planned_episodes,
+            episodes=max_episodes if params.convergence else planned_episodes,
             decay_episodes=planned_episodes,      
             window_size=min(planned_episodes, int(params.window_size)),
             convergence=bool(params.convergence),

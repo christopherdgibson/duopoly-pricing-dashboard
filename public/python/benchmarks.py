@@ -1,3 +1,13 @@
+from config import MarketParams
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class FirmBenchmark:
+    firm: int
+    marginal_cost: float
+    bertrand_price: float
+    monopoly_price: float
+
 class MarketBenchmarks:
     """
     Computes analytical benchmark equilibrium prices and profits for a
@@ -22,11 +32,38 @@ class MarketBenchmarks:
         return p1, p2
 
     @property
-    def monopoly_prices(self) -> float:
+    def monopoly_prices(self) -> tuple[float, float]:
         """Monopoly Maximizing Prices."""
         p1 = self.monopoly_price(self.c1)
         p2 = self.monopoly_price(self.c2)
         return p1, p2
+
+    @property
+    def benchmarks(self) -> FirmBenchmark:
+        (pb1, pb2) = self.bertrand_prices
+        (pm1, pm2) = self.monopoly_prices
+
+        benchmarks = [
+            {
+                "firm": 1,
+                "marginal_cost": self.c1,
+                "bertrand_price": pb1,
+                "monopoly_price": pm1
+            }
+        ]
+
+        if self.c1 != self.c2:
+            benchmarks.append(
+                {
+                    "firm": 2,
+                    "marginal_cost": self.c2,
+                    "bertrand_price": pb2,
+                    "monopoly_price": pm2
+                }
+            )
+
+        return benchmarks
+
 
     @property
     def summary(self) -> dict:
@@ -62,6 +99,14 @@ class MarketBenchmarks:
         profit1 = (p1 - self.c1) * q1
         profit2 = (p2 - self.c2) * q2
         return profit1, profit2
+
+    @classmethod
+    def from_params(cls, params: MarketParams) -> "MarketBenchmarks":
+        return cls(
+            a=params.demand_intercept, 
+            b=params.demand_slope, 
+            cost=[params.marginal_cost_1, params.marginal_cost_2]
+        )
 
 if __name__ == "__main__":
     benchmarks = MarketBenchmarks(a=100.0, b=2.0, cost=5.0)

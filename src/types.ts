@@ -50,7 +50,6 @@ export interface FinalAverageProps {
 
 export interface SimulationResults {
   trajectory: Array<TrajectoryProps>;
-  benchmarks: Array<FirmBenchmarkResults>;
   final_averages: FinalAverageProps;
 }
 
