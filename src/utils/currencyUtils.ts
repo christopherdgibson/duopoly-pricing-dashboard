@@ -9,14 +9,18 @@ export function formatCurrencyValues<T extends object>(
     const val = obj[typedKey];
 
     if (typeof val === 'number' && !excludedKeys.includes(typedKey)) {
-      result[typedKey] = currencyFormatter.format(val);
+      result[typedKey] = formatCurrencyValue(val);
     }
   }
 
   return result;
 }
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
+export function formatCurrencyValue(value: number) {
+  return currencyFormatter.format(value);
+}
+
+const currencyFormatter = new Intl.NumberFormat('en-UK', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2,

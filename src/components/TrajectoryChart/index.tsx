@@ -15,6 +15,8 @@ import { RenderableText } from 'recharts';
 import type { FirmBenchmarkResults, TrajectoryProps } from '../../types';
 import styles from './TrajectoryChart.module.css';
 
+import { formatCurrencyValue } from '../../utils/currencyUtils';
+
 interface TrajectoryChartProps {
   trajectory: Array<TrajectoryProps>;
   benchmarks?: Array<FirmBenchmarkResults>;
@@ -69,11 +71,11 @@ export function TrajectoryChart({ title = "Price Trajectory vs Economic Benchmar
             />
             <Tooltip
               wrapperClassName={styles.tooltip}
-              formatter={(value) => [
+              formatter={(value, name) => [
                 (typeof value === 'number')
-                  ? (formatType === 'currency' ? `€${value.toFixed(2)}` : value)
+                  ? (formatType === 'currency' ? formatCurrencyValue(value) : value)
                   : '',
-                ''
+                name
               ]}
             />
             <Legend wrapperStyle={{ fontSize: '12px', bottom: '0px' }} />

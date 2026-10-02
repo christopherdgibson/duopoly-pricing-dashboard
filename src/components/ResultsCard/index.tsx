@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { FirmBenchmarkResults, FinalAverageProps } from '../../types';
-import { formatCurrencyValues } from '../../utilities';
+import { formatCurrencyValues } from '../../utils/currencyUtils';
 import styles from './ResultsCard.module.css';
 
 interface CardProps {
@@ -15,8 +15,9 @@ interface BenchmarkCardProps extends CardProps {
     benchmarks: Array<FirmBenchmarkResults>;
 }
 
-interface FirmBenchmarkCardProps extends CardProps {
+interface FirmBenchmarkCardProps {
     benchmarks: FirmBenchmarkResults;
+    showTitle?: boolean;
 }
 
 export function BenchmarkResultsCard({title="Benchmark Results", benchmarks}: BenchmarkCardProps) {
@@ -30,8 +31,8 @@ export function BenchmarkResultsCard({title="Benchmark Results", benchmarks}: Be
                     <FirmBenchmarksCard benchmarks={benchmarks[0]} />
                 ) : (
                     <>
-                        <FirmBenchmarksCard title={"Firm 1"} benchmarks={benchmarks[0]} />
-                        <FirmBenchmarksCard title={"Firm 2"} benchmarks={benchmarks[1]} />
+                        <FirmBenchmarksCard benchmarks={benchmarks[0]} showTitle={true} />
+                        <FirmBenchmarksCard benchmarks={benchmarks[1]} showTitle={true}/>
                     </>
                 )
             }
@@ -39,7 +40,8 @@ export function BenchmarkResultsCard({title="Benchmark Results", benchmarks}: Be
     );
 }
 
-function FirmBenchmarksCard({title, benchmarks}: FirmBenchmarkCardProps) {
+function FirmBenchmarksCard({benchmarks, showTitle = false}: FirmBenchmarkCardProps) {
+    const title = `Firm ${benchmarks.firm}`;
     const formattedBenchmarks = useMemo(
         () => formatCurrencyValues(benchmarks, [
             'firm',
@@ -48,8 +50,10 @@ function FirmBenchmarksCard({title, benchmarks}: FirmBenchmarkCardProps) {
     );
         
     return (
-        <>
-            {title && <h3 className={styles.resultsSubTitle}>{title}</h3>}
+        <div className={styles.resultsRow}>
+            <div className={styles.rowLabel} style={{opacity: showTitle ? 1 : 0}}>
+                {title}
+            </div>
             <div className={styles.resultsGrid}>
                 <div className={styles.metricItem}>
                     <span className={styles.metricLabel}>Marginal Cost</span>
@@ -70,7 +74,10 @@ function FirmBenchmarksCard({title, benchmarks}: FirmBenchmarkCardProps) {
                     </span>
                 </div>
             </div>
-        </>
+            <div className={styles.rowLabel}>
+                {title}
+            </div>
+        </div>
     );
 }
 
