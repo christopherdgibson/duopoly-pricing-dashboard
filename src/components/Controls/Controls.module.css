@@ -55,6 +55,26 @@
   border-radius: 8px;
 }
 
+.flexGrid {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding: 10px 14px;
+  margin-bottom: 24px;
+  border: 1px solid #efefef;
+  border-radius: 8px;
+}
+
+.flexGroup {
+  flex: 1 1 auto;
+}
+
+.shrinkGroup {
+  flex: 0;
+  text-wrap: wrap;
+  text-align: center;
+}
+
 .fieldGroup {
   display: flex;
   flex-direction: column;
@@ -80,13 +100,17 @@
   display: flex;
   flex-direction: row;
   gap: 10px;
-  align-items: center;
+  /* align-items: center; */
 }
 
 .inputLeft {
   flex: 1;
   display: flex;
   justify-content: center;
+  
+  input[type="checkbox"] {
+    scale: 1.15;
+  }
 }
 .inputLeft ~ * {
   width: 80% !important;
@@ -94,6 +118,16 @@
 
 .inputSlider {
   cursor: pointer;
+}
+
+.selectedDropdown {
+  padding: 10px 14px;
+  font-size: 1.15rem;
+  color: #1e293b;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+  align-self: end;
+  justify-self: center;
 }
 
 /* Inputs & Selects */

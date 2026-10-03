@@ -1,11 +1,20 @@
-// Define configuration interface for sliders
+export type MarketDemandKey = 'linear' | 'logit';
+
 export interface MarketConfig {
+  market_demand: MarketDemandKey
   demand_intercept: number;
   demand_slope: number;
+  elasticity_ij: number;
   marginal_cost_1: number;
   marginal_cost_2: number;
   alpha: number;
   epsilon: number;
+}
+
+export interface DemandConfig {
+  demand_intercept: number;
+  demand_slope: number;
+  elasticity_ij: number;
 }
 
 export interface RunConfig {
@@ -18,6 +27,11 @@ export interface RunConfig {
 export interface SimulationPayload {
   market: MarketConfig;
   run: RunConfig;
+}
+
+export interface ControlsBase {
+  payload: SimulationPayload;
+  isRunning: boolean;
 }
 
 export interface TrajectoryProps {

@@ -26,16 +26,18 @@ class MarketSimulation:
     @classmethod
     def from_params(cls, params: MarketParams, n_prices: int = 15, allow_sub_cost: bool = False) -> "MarketSimulation":
         env = DuopolyPricingEnv(
-            a=params.demand_intercept, 
-            b=params.demand_slope, 
+            demand_intercept=params.demand_intercept, 
+            demand_slope=params.demand_slope, 
             cost=[params.marginal_cost_1, params.marginal_cost_2],
             price_grid = DuopolyPricingEnv.generate_price_grid(params.demand_intercept, params.marginal_cost_1, params.marginal_cost_2, n_prices, allow_sub_cost)
         )
         agent1 = QLearningAgent(n_prices=env.n_prices, alpha=params.alpha, epsilon=params.epsilon)
         agent2 = QLearningAgent(n_prices=env.n_prices, alpha=params.alpha, epsilon=params.epsilon)
         benchmarks = MarketBenchmarks(
-            a=params.demand_intercept, 
-            b=params.demand_slope, 
+            market_demand=params.market_demand,
+            demand_intercept=params.demand_intercept, 
+            demand_slope=params.demand_slope,
+            elasticity_ij=params.elasticity_ij,
             cost=[params.marginal_cost_1, params.marginal_cost_2]
         )
         

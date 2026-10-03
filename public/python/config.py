@@ -2,8 +2,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class MarketParams:
+    market_demand: str
     demand_intercept: float
     demand_slope: float
+    elasticity_ij: float
     marginal_cost_1: float
     marginal_cost_2: float
     alpha: float

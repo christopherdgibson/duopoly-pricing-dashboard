@@ -21,11 +21,11 @@ class Stopwatch:
         secStr = str(secRound) if int(secRound) >= 10 else '0'+str(secRound)
         print(text, "{0}:{1}:{2}".format(hoursStr, minStr, secStr))
 
-    def split(self):
+    def split(self, text: str = "Split time ="):
         current_time: float = time.time()
         split_interval = float(current_time) - float(self.split_time)
         self.split_time = current_time
-        self.time_convert(split_interval, "Split time =")
+        self.time_convert(split_interval, text)
 
     def total(self):
         current_time = time.time()

@@ -7,8 +7,10 @@ import type { FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, 
 import styles from './App.module.css';
 
 const DEFAULT_MARKET_CONFIG: MarketConfig = {
+  market_demand: 'linear',
   demand_intercept: 100,
-  demand_slope: 2,
+  demand_slope: 3,
+  elasticity_ij: 2,
   marginal_cost_1: 5,
   marginal_cost_2: 5,
   alpha: 0.15,     // Standard Q-learning rate
