@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { FirmBenchmarkResults, FinalAverageProps } from '../../types';
 import { formatCurrencyValues } from '../../utils/currencyUtils';
-import styles from './ResultsCard.module.css';
+import styles from '../../App/App.module.css';
 
 interface CardProps {
     title?: string;
@@ -16,41 +16,41 @@ interface BenchmarkCardProps extends CardProps {
 }
 
 interface FirmBenchmarkCardProps {
-    benchmarks: FirmBenchmarkResults;
+    benchmarks: FirmBenchmarkResults | null;
     showTitle?: boolean;
+    collapseCard?: boolean;
 }
 
 export function BenchmarkResultsCard({title="Benchmark Results", benchmarks}: BenchmarkCardProps) {
-  if (!benchmarks || benchmarks.length === 0) return null;
-
+    if (!benchmarks || benchmarks.length === 0) return null;
+    
+    const benchmarksAsymmetric = benchmarks.length > 1;
     return (
         <div className={styles.resultsCard}>
             <h3 className={styles.resultsTitle}>{title}</h3>
-            {benchmarks.length === 1 ?
-                (
-                    <FirmBenchmarksCard benchmarks={benchmarks[0]} />
-                ) : (
-                    <>
-                        <FirmBenchmarksCard benchmarks={benchmarks[0]} showTitle={true} />
-                        <FirmBenchmarksCard benchmarks={benchmarks[1]} showTitle={true}/>
-                    </>
-                )
-            }
+            <FirmBenchmarksCard benchmarks={benchmarks[0]} showTitle={benchmarksAsymmetric} />
+            <FirmBenchmarksCard benchmarks={benchmarks[1]} showTitle={benchmarksAsymmetric} collapseCard={!benchmarksAsymmetric}/>
         </div>
     );
 }
 
-function FirmBenchmarksCard({benchmarks, showTitle = false}: FirmBenchmarkCardProps) {
-    const title = `Firm ${benchmarks.firm}`;
+function FirmBenchmarksCard({benchmarks, showTitle = false, collapseCard = false}: FirmBenchmarkCardProps) {
+    const benchmarksNull = {
+        marginal_cost: '-',
+        bertrand_price: '-',
+        monopoly_price: '-'
+    }
+    const title = benchmarks ? `Firm ${benchmarks.firm}` : 'Firm 2';
+
     const formattedBenchmarks = useMemo(
-        () => formatCurrencyValues(benchmarks, [
+        () => benchmarks ? formatCurrencyValues(benchmarks, [
             'firm',
-        ]),
+        ]) : benchmarksNull,
         [benchmarks]
     );
         
     return (
-        <div className={styles.resultsRow}>
+        <div className={styles.resultsRow} style={{maxHeight: collapseCard ? 0 : 100}}>
             <div className={styles.rowLabel} style={{opacity: showTitle ? 1 : 0}}>
                 {title}
             </div>

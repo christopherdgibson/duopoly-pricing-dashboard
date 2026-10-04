@@ -1,4 +1,4 @@
-import styles from '.././Controls.module.css';
+import styles from '../../../App/App.module.css';
 import type { ControlsBase, MarketConfig } from '../../../types';
 
 export interface LinearDemandProps extends ControlsBase {

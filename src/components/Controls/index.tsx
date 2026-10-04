@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MathJax, MathJaxContext } from 'better-react-mathjax';
-import styles from './Controls.module.css';
+import styles from '../../App/App.module.css';
 import { LinearDemandControls } from './LinearDemand';
 import type { ControlsBase, MarketDemandKey, SimulationPayload } from '../../types';
 
