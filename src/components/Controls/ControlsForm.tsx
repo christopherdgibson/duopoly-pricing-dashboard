@@ -125,24 +125,25 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
             />
           </div>
 
-          <div className={`${styles.fieldGroup} ${styles.shrinkGroup}`}>
-            <label className={styles.label}>
-              <span>Asymmetric?</span>
-            </label>
-            <div className={styles.inputLeft}>
-            <input 
+          <div className={`${styles.inputGroup} ${styles.flexGroup}`}>
+            <div className={`${styles.fieldGroup} ${styles.inputLeft}`}>
+              <label className={styles.label}>
+                <span><MathJax inline={true}>{"\\(c_1 \\ne c_2  \\)"}</MathJax></span>
+              </label>
+              <div className={styles.inputLeft}>
+                <input 
                   type="checkbox"
                   className={styles.input}
                   disabled={isRunning}
                   onChange={(e) => toggleAsymmetricCost(e.target.checked)}
                 />
-          </div>
-          </div>
-          <div className={`${styles.fieldGroup} ${styles.flexGroup}`}>
-            <label className={styles.label}>
-              <span>Marginal Cost 2 <MathJax inline={true}>({"\\(c_2  \\)"})</MathJax></span>
-              <span className={styles.hint}>Firm 2 unit cost</span>
-            </label>
+            </div>
+            </div>
+            <div className={`${styles.fieldGroup} `}>
+              <label className={styles.label}>
+                <span>Marginal Cost 2 <MathJax inline={true}>({"\\(c_2  \\)"})</MathJax></span>
+                <span className={styles.hint}>Firm 2 unit cost</span>
+              </label>
                 <input
                   type="number"
                   className={styles.input}
@@ -151,6 +152,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                   disabled={!asymmetricCost || isRunning}
                   onChange={(e) => handleConfigChange('market', 'marginal_cost_2', Number(e.target.value))}
                 />
+            </div>
           </div>
         </div>
 
