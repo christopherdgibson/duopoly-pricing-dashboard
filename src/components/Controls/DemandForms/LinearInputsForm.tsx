@@ -1,11 +1,12 @@
 import styles from '../../../App/App.module.css';
-import type { ControlsBase, MarketConfig } from '../../../types';
+import type { ControlsBase, LinearDemandInputs } from '../../../types';
 
 export interface LinearDemandProps extends ControlsBase {
-  updateDemandConfig: <F extends keyof MarketConfig>(field: F, value: MarketConfig[F]) => void;
+    inputs: LinearDemandInputs;
+    updateDemandConfig: (field: keyof LinearDemandInputs, value: number) => void;
 }
 
-export function LinearDemandControls({payload, updateDemandConfig, isRunning}: LinearDemandProps) {
+export function LinearInputsForm({inputs, updateDemandConfig, isRunning}: LinearDemandProps) {
     return (
         <div className={styles.grid}>
             {/* Demand Intercept */}
@@ -18,7 +19,7 @@ export function LinearDemandControls({payload, updateDemandConfig, isRunning}: L
                     type="number"
                     className={styles.input}
                     min={0}
-                    value={payload.market.demand_intercept}
+                    value={inputs.demand_intercept}
                     disabled={isRunning}
                     onChange={(e) => updateDemandConfig('demand_intercept', Number(e.target.value))}
                 />
@@ -33,7 +34,7 @@ export function LinearDemandControls({payload, updateDemandConfig, isRunning}: L
                 <input
                     type="number"
                     className={styles.input}
-                    value={payload.market.demand_slope}
+                    value={inputs.demand_slope}
                     disabled={isRunning}
                     onChange={(e) => updateDemandConfig('demand_slope', Number(e.target.value))}
                 />
@@ -48,7 +49,7 @@ export function LinearDemandControls({payload, updateDemandConfig, isRunning}: L
                 <input
                     type="number"
                     className={styles.input}
-                    value={payload.market.elasticity_ij}
+                    value={inputs.elasticity_ij}
                     disabled={isRunning}
                     onChange={(e) => updateDemandConfig('elasticity_ij', Number(e.target.value))}
                 />

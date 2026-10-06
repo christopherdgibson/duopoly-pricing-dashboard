@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { MathJax, MathJaxContext } from 'better-react-mathjax';
 import styles from '../../App/App.module.css';
-import { LinearDemandControls } from './LinearDemand';
-import type { ControlsBase, MarketDemandKey, SimulationPayload } from '../../types';
+import { LinearInputsForm } from './DemandForms/LinearInputsForm';
+import type { ControlsBase, DemandInputs, DemandInputsMap, LinearDemandInputs, DemandTypeKey, SimulationPayload } from '../../types';
 
 export interface ControlsProps extends ControlsBase {
+  payload: SimulationPayload;
   onChange: (updatedParams: SimulationPayload) => void;
+  handleModelTypeChange: (newModel: "linear" | "logit") => void
   onRunSimulation: () => void;
 }
 
-export default function Controls({payload, onChange, onRunSimulation, isRunning}: ControlsProps) {
+export default function Controls({payload, handleModelTypeChange, onChange, onRunSimulation, isRunning}: ControlsProps) {
   const [asymmetricCost, setAsymmetricCost] = useState<boolean>(false);
+  const demandInputs: DemandInputs = payload.market.demand_inputs;
 
   const handleConfigChange = <S extends keyof SimulationPayload, F extends keyof SimulationPayload[S]> (
     section: S,
@@ -38,6 +41,22 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
     });
   };
 
+  const handleDemandChange = <F extends keyof DemandInputsMap[typeof payload.market.demand_type]>(
+    field: F,
+    value: number
+  ) => {
+    onChange({
+      ...payload,
+      market: {
+        ...payload.market,
+        demand_inputs: {
+          ...payload.market.demand_inputs,
+          [field]: value,
+        },
+      } as typeof payload.market, // Cast ensures TS knows the union shape remains intact
+    });
+  };
+
   const toggleAsymmetricCost = (checked:boolean) => {
     setAsymmetricCost(checked);
     if (!checked) {
@@ -62,22 +81,23 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
             </label>
             <select
               className={styles.input}
-              value={payload.market.market_demand}
+              value={payload.market.demand_type}
               // disabled={isRunning}
               disabled={true}
-              onChange={(e) => handleConfigChange('market', 'market_demand', e.target.value as MarketDemandKey)}
+              onChange={(e) => handleModelTypeChange(e.target.value as DemandTypeKey)}
+              // onChange={(e) => handleConfigChange('market', 'demand_type', e.target.value as DemandTypeKey)}
             >
               <option value={'linear'}>Linear Demand</option>
               <option value={'logit'}>Logit Demand</option>
             </select>
           </div>
           <div className={styles.selectedDropdown}>
-            {payload.market.market_demand === 'linear' && 
+            {payload.market.demand_type === 'linear' && 
               <MathJax>
                 {"\\(q_i = a - b\\cdot p_i + d\\cdot p_j\\)"}
               </MathJax>
             }
-            {payload.market.market_demand === 'logit' && 
+            {payload.market.demand_type === 'logit' && 
               <MathJax>
                 {"\\(q_i = \\frac{e^{\\frac{a_i - p_i}{\\mu}}}{1 + \\sum_{j=1}^{N}e^{\\frac{a_j - p_j}{\\mu}}}  \\)"}
               </MathJax>
@@ -85,8 +105,8 @@ export default function Controls({payload, onChange, onRunSimulation, isRunning}
           </div>
         </div>
         <h3 className={styles.subTitle}>Demand Parameters</h3>
-        <LinearDemandControls payload={payload} updateDemandConfig={(field, value) => handleConfigChange('market', field, value)} isRunning={isRunning} />
-        
+        {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value)} isRunning={isRunning} />}
+
         {/* Marginal Cost */}
         <h3 className={styles.subTitle}>Cost Parameters</h3>
         <div className={styles.flexGrid}>        

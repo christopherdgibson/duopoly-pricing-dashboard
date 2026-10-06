@@ -1,7 +1,8 @@
 import numpy as np
-from simulation import MarketSimulation
+
 from benchmarks import MarketBenchmarks
 from config import MarketParams, RunConfig, SimulationConfig
+from simulation import MarketSimulation
 
 def run_simulation_engine(config_dict: dict, include_trajectory: bool = True):
     # Convert Pyodide JsProxy objects to native Python dicts
@@ -9,7 +10,7 @@ def run_simulation_engine(config_dict: dict, include_trajectory: bool = True):
         config_dict = config_dict.to_py()
 
     # Unpack JS dictionaries directly into dataclass constructors
-    market_params = MarketParams(**config_dict["market"])
+    market_params = MarketParams.unpack_config(config_dict["market"])
     run_inputs = RunConfig(**config_dict["run"])
 
     run_config = RunConfig.from_params(run_inputs)
@@ -115,12 +116,7 @@ def append_trajectory(sim: MarketSimulation, window_size: int, ep: int):
         })
 
 def get_benchmarks(config_dict: dict) -> tuple[float, float]:
-    # Convert Pyodide JsProxy objects to native Python dicts
-    if hasattr(config_dict, "to_py"):
-        config_dict = config_dict.to_py()
-
-    # Unpack JS dictionaries directly into dataclass constructors
-    market_params = MarketParams(**config_dict)
+    market_params = MarketParams.unpack_config(config_dict)
     market = MarketBenchmarks.from_params(market_params)
 
     return market.benchmarks

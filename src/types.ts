@@ -1,20 +1,37 @@
-export type MarketDemandKey = 'linear' | 'logit';
+export type DemandTypeKey = 'linear' | 'logit';
 
-export interface MarketConfig {
-  market_demand: MarketDemandKey
-  demand_intercept: number;
-  demand_slope: number;
-  elasticity_ij: number;
-  marginal_cost_1: number;
-  marginal_cost_2: number;
-  alpha: number;
-  epsilon: number;
+
+export type DemandInputs = LinearDemandInputs | LogitDemandInputs;
+
+export interface DemandInputsMap {
+  linear: LinearDemandInputs;
+  logit: LogitDemandInputs;
 }
 
-export interface DemandConfig {
+// A generic MarketConfig enforcing the matching demand input
+export type MarketConfig<K extends keyof DemandInputsMap = keyof DemandInputsMap> = K extends any 
+  ? {
+      demand_type: K;
+      demand_inputs: DemandInputsMap[K];
+      marginal_cost_1: number;
+      marginal_cost_2: number;
+      alpha: number;
+      epsilon: number;
+    }
+  : never;
+
+export interface LinearDemandInputs {
+  type: 'linear';
   demand_intercept: number;
   demand_slope: number;
   elasticity_ij: number;
+}
+
+export interface LogitDemandInputs {
+  type: 'logit';
+  market_size: number;
+  price_sensitivity: number;
+  nesting_parameter?: number; // Optional nested logit param
 }
 
 export interface RunConfig {
@@ -30,7 +47,6 @@ export interface SimulationPayload {
 }
 
 export interface ControlsBase {
-  payload: SimulationPayload;
   isRunning: boolean;
 }
 

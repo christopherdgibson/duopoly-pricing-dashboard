@@ -21,20 +21,22 @@ export function usePyodide() {
         await py.loadPackage(['numpy']);
 
         // Fetch all four Python files
-        const [configSrc, envSrc, agentSrc, benchSrc, simSrc, mainSrc] = await Promise.all([
-          fetch(`${base}python/config.py`).then((res) => res.text()),
-          fetch(`${base}python/environment.py`).then((res) => res.text()),
+        const [agentSrc, benchSrc, configSrc, demandSrc, envSrc, simSrc, mainSrc] = await Promise.all([
           fetch(`${base}python/agent.py`).then((res) => res.text()),
           fetch(`${base}python/benchmarks.py`).then((res) => res.text()),
+          fetch(`${base}python/config.py`).then((res) => res.text()),
+          fetch(`${base}python/demand.py`).then((res) => res.text()),
+          fetch(`${base}python/environment.py`).then((res) => res.text()),
           fetch(`${base}python/simulation.py`).then((res) => res.text()),
           fetch(`${base}python/main.py`).then((res) => res.text()),
         ]);
 
         // Write support modules to the virtual file system
-        py.FS.writeFile('config.py', configSrc);
-        py.FS.writeFile('environment.py', envSrc);
         py.FS.writeFile('agent.py', agentSrc);
         py.FS.writeFile('benchmarks.py', benchSrc);
+        py.FS.writeFile('config.py', configSrc);
+        py.FS.writeFile('demand.py', demandSrc);
+        py.FS.writeFile('environment.py', envSrc);        
         py.FS.writeFile('simulation.py', simSrc);
 
         // Execute main.py once to load run_simulation_engine into Python's global scope

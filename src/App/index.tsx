@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react';
-import Controls from '../components/Controls';
+import Controls from '../components/Controls/ControlsForm';
 import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
 import { TrajectoryChart } from '../components/TrajectoryChart';
 import { usePyodide } from '../hooks/usePyodide';
-import type { FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
+import type { DemandInputs, DemandInputsMap, LinearDemandInputs, LogitDemandInputs, FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 import styles from './App.module.css';
 
-const DEFAULT_MARKET_CONFIG: MarketConfig = {
-  market_demand: 'linear',
+const DEFAULT_LINEAR_INPUTS: LinearDemandInputs = {
+  type: 'linear',
   demand_intercept: 100,
   demand_slope: 3,
   elasticity_ij: 2,
+}
+
+const DEFAULT_LOGIT_INPUTS: LogitDemandInputs = {
+  type: 'logit',
+  market_size: 100,
+  price_sensitivity: 2,
+};
+
+const DEFAULT_MARKET_CONFIG: MarketConfig = {
+  demand_type: 'linear',
+  demand_inputs: DEFAULT_LINEAR_INPUTS,
   marginal_cost_1: 5,
   marginal_cost_2: 5,
   alpha: 0.15,     // Standard Q-learning rate
@@ -36,7 +47,7 @@ export default function App() {
 
     async function updateBenchmarks(market: MarketConfig) {
       // If Pyodide is still loading, fallback to local JS calculations
-      if (isLoading) {
+      if (isLoading && market.demand_type === 'linear') {
         setBenchmarks(getBenchmarksJS(market));
         return;
       }
@@ -49,12 +60,14 @@ export default function App() {
             setBenchmarks(pyBenchmarks);
           } else {
             // Fallback to local JS if Python returned null
-            setBenchmarks(getBenchmarksJS(market));
+            if (market.demand_type === 'linear') {
+              setBenchmarks(getBenchmarksJS(market));
+            }            
           }
         }
       } catch (err) {
         console.error('Failed to calculate Pyodide summary prices, falling back to local JS:', err);
-        if (isMounted) {
+        if (isMounted && market.demand_type === 'linear') {
           setBenchmarks(getBenchmarksJS(market));
         }
       }
@@ -81,9 +94,31 @@ export default function App() {
     }
   };
 
-  function getBenchmarksJS(market: MarketConfig): Array<FirmBenchmarkResults> {
-    const a = market.demand_intercept;
-    const b = market.demand_slope;
+  const handleModelTypeChange = (newModel: 'linear' | 'logit') => {
+    if (newModel === 'linear') {
+      setPayload({
+        ...payload,
+        market: {
+          ...payload.market,
+          demand_type: 'linear',
+          demand_inputs: DEFAULT_LINEAR_INPUTS,
+        },
+      });
+    } else {
+      setPayload({
+        ...payload,
+        market: {
+          ...payload.market,
+          demand_type: 'logit',
+          demand_inputs: DEFAULT_LOGIT_INPUTS,
+        },
+      });
+    }
+  };
+
+  function getBenchmarksJS(market: MarketConfig<'linear'>): Array<FirmBenchmarkResults> {
+    const a = market.demand_inputs.demand_intercept;
+    const b = market.demand_inputs.demand_slope;
     const c1 = market.marginal_cost_1;
     const c2 = market.marginal_cost_2;
 
@@ -136,6 +171,7 @@ export default function App() {
 
       <Controls
         payload={payload}
+        handleModelTypeChange={handleModelTypeChange}
         onChange={setPayload}
         onRunSimulation={handleRun}
         isRunning={isRunning}
