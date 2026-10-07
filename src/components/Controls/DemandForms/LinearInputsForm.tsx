@@ -3,7 +3,7 @@ import type { ControlsBase, LinearDemandInputs } from '../../../types';
 
 export interface LinearDemandProps extends ControlsBase {
     inputs: LinearDemandInputs;
-    updateDemandConfig: (field: keyof LinearDemandInputs, value: number) => void;
+    updateDemandConfig: (field: keyof LinearDemandInputs, value: number, minValue?: number) => void;
 }
 
 export function LinearInputsForm({inputs, updateDemandConfig, isRunning}: LinearDemandProps) {

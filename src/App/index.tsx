@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { WelcomeView } from '../components/WelcomeView';
 import Controls from '../components/Controls/ControlsForm';
 import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
 import { TrajectoryChart } from '../components/TrajectoryChart';
@@ -15,8 +16,11 @@ const DEFAULT_LINEAR_INPUTS: LinearDemandInputs = {
 
 const DEFAULT_LOGIT_INPUTS: LogitDemandInputs = {
   type: 'logit',
-  market_size: 100,
-  price_sensitivity: 2,
+  quality_1: 2,
+  quality_2: 2,
+  price_sensitivity: 1,
+  logit_scale: 2,
+  outside_utility: 0
 };
 
 const DEFAULT_MARKET_CONFIG: MarketConfig = {
@@ -156,98 +160,101 @@ export default function App() {
     return benchmarks;
   }
 
-  if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <h2 className={styles.loadingTitle}>Loading Python Environment...</h2>
-        <p className={styles.loadingText}>Downloading Pyodide WASM runtime into browser.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Algorithmic Collusion Simulator</h1>
+    <>
+      <h1 className={styles.pageTitle}>Duopoly Pricing Engine</h1>
+      <WelcomeView />
 
-      <Controls
-        payload={payload}
-        handleModelTypeChange={handleModelTypeChange}
-        onChange={setPayload}
-        onRunSimulation={handleRun}
-        isRunning={isRunning}
-      />
-      
-      {benchmarks && <BenchmarkResultsCard benchmarks={benchmarks} />}
-      
-      {results && (
-        <>
-          {results.length <= 1 && (
-            <SimulationResultsCard final_averages={results[0].final_averages}/>
-          )}
+      {isLoading
+        ? ( 
+          <div className={styles.loadingContainer}>
+            <h2 className={styles.loadingTitle}>Loading Python Environment...</h2>
+            <p className={styles.loadingText}>Downloading Pyodide WASM runtime into browser.</p>
+          </div>
+        )  : (
+          <div className={styles.container}>
+            <Controls
+              payload={payload}
+              handleModelTypeChange={handleModelTypeChange}
+              onChange={setPayload}
+              onRunSimulation={handleRun}
+              isRunning={isRunning}
+            />
+            
+            {benchmarks && <BenchmarkResultsCard benchmarks={benchmarks} />}
+            
+            {results && (
+              <>
+                {results.length <= 1 && (
+                  <SimulationResultsCard final_averages={results[0].final_averages}/>
+                )}
 
-          {results.length > 1 && (
-            <>
-              <SimulationResultsCard title={"Simulation Card - Symmetric Costs"} final_averages={results[0].final_averages}/>
-              <SimulationResultsCard title={"Simulation Card - Asymmetric Costs"} final_averages={results[1].final_averages}/>
-            </>
-          )}
+                {results.length > 1 && (
+                  <>
+                    <SimulationResultsCard title={"Simulation Card - Symmetric Costs"} final_averages={results[0].final_averages}/>
+                    <SimulationResultsCard title={"Simulation Card - Asymmetric Costs"} final_averages={results[1].final_averages}/>
+                  </>
+                )}
 
-          {results.length <= 1 && (
-            <>
-              <TrajectoryChart
-                trajectory={results[0].trajectory}
-                benchmarks={benchmarks ?? undefined}
-                dataKey1={"avg_price1"}
-                dataKey2={"avg_price2"}
-                name1={"Firm 1 Price"}
-                name2={"Firm 2 Price"}
-                formatType={"currency"}
-                xLabel={'Episode'}
-                yLabel={'Price (€)'}
-              />
-              <TrajectoryChart
-                title={"Optimal Actions"}
-                trajectory={results[0].trajectory}
-                dataKey1={"avg_optimal_a1"}
-                dataKey2={"avg_optimal_a2"}
-                name1={"Firm 1 Optimal Action"}
-                name2={"Firm 2 Optimal Action"}
-                formatType={"integer"}
-                xLabel={'Episode'}
-                yLabel={'Action'}
-              />
-            </>
-          )}
-          {results.length > 1 && (
-            <>
-              <TrajectoryChart
-                title={"Price Trajectory vs Economic Benchmarks - Symmetric Costs"}
-                trajectory={results[0].trajectory}
-                benchmarks={benchmarks ?? undefined}
-                dataKey1={"avg_price1"}
-                dataKey2={"avg_price2"}
-                name1={"Firm 1 Price"}
-                name2={"Firm 2 Price"}
-                formatType={"currency"}
-                xLabel={'Episode'}
-                yLabel={'Price (€)'}
-              />
-              <TrajectoryChart
-                title={"Price Trajectory vs Economic Benchmarks - Asymmetric Costs"}
-                trajectory={results[1].trajectory}
-                benchmarks={benchmarks ?? undefined}
-                dataKey1={"avg_price1"}
-                dataKey2={"avg_price2"}
-                name1={"Firm 1 Price"}
-                name2={"Firm 2 Price"}
-                formatType={"currency"}
-                xLabel={'Episode'}
-                yLabel={'Price (€)'}
-              />
-            </>
-          )}
-        </>
-      )}
-    </div>
+                {results.length <= 1 && (
+                  <>
+                    <TrajectoryChart
+                      trajectory={results[0].trajectory}
+                      benchmarks={benchmarks ?? undefined}
+                      dataKey1={"avg_price1"}
+                      dataKey2={"avg_price2"}
+                      name1={"Firm 1 Price"}
+                      name2={"Firm 2 Price"}
+                      formatType={"currency"}
+                      xLabel={'Episode'}
+                      yLabel={'Price (€)'}
+                    />
+                    <TrajectoryChart
+                      title={"Optimal Actions"}
+                      trajectory={results[0].trajectory}
+                      dataKey1={"avg_optimal_a1"}
+                      dataKey2={"avg_optimal_a2"}
+                      name1={"Firm 1 Optimal Action"}
+                      name2={"Firm 2 Optimal Action"}
+                      formatType={"integer"}
+                      xLabel={'Episode'}
+                      yLabel={'Action'}
+                    />
+                  </>
+                )}
+                {results.length > 1 && (
+                  <>
+                    <TrajectoryChart
+                      title={"Price Trajectory vs Economic Benchmarks - Symmetric Costs"}
+                      trajectory={results[0].trajectory}
+                      benchmarks={benchmarks ?? undefined}
+                      dataKey1={"avg_price1"}
+                      dataKey2={"avg_price2"}
+                      name1={"Firm 1 Price"}
+                      name2={"Firm 2 Price"}
+                      formatType={"currency"}
+                      xLabel={'Episode'}
+                      yLabel={'Price (€)'}
+                    />
+                    <TrajectoryChart
+                      title={"Price Trajectory vs Economic Benchmarks - Asymmetric Costs"}
+                      trajectory={results[1].trajectory}
+                      benchmarks={benchmarks ?? undefined}
+                      dataKey1={"avg_price1"}
+                      dataKey2={"avg_price2"}
+                      name1={"Firm 1 Price"}
+                      name2={"Firm 2 Price"}
+                      formatType={"currency"}
+                      xLabel={'Episode'}
+                      yLabel={'Price (€)'}
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        )
+      }
+    </>
   );
 }

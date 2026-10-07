@@ -28,9 +28,12 @@ export interface LinearDemandInputs {
 }
 
 export interface LogitDemandInputs {
-  type: 'logit';
-  market_size: number;
+  type: "logit";
+  quality_1: number;
+  quality_2: number;
   price_sensitivity: number;
+  logit_scale: number;
+  outside_utility?: number;
   nesting_parameter?: number; // Optional nested logit param
 }
 
