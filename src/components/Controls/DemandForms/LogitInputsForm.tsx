@@ -37,24 +37,9 @@ export function LogitInputsForm({inputs, updateDemandConfig, isRunning}: LogitDe
                     min={0}
                     value={inputs.quality_2}
                     disabled={isRunning}
-                    onChange={(e) => updateDemandConfig('quality_1', Number(e.target.value), 0)}
+                    onChange={(e) => updateDemandConfig('quality_2', Number(e.target.value), 0)}
                 />
             </div>
-            {/* Market Size */}
-            {/* <div className={styles.fieldGroup}>
-                <label className={styles.label}>
-                    <span>Demand Intercept (<em>a</em>)</span>
-                    <span className={styles.hint}>Market size</span>
-                </label>
-                <input
-                    type="number"
-                    className={styles.input}
-                    min={0}
-                    value={inputs.market_size}
-                    disabled={isRunning}
-                    onChange={(e) => updateDemandConfig('market_size', Number(e.target.value))}
-                />
-            </div> */}
 
             {/* Price Sensitivity */}
             <div className={styles.fieldGroup}>
@@ -65,10 +50,11 @@ export function LogitInputsForm({inputs, updateDemandConfig, isRunning}: LogitDe
                 <input
                     type="number"
                     className={styles.input}
-                    min={0}
+                    min={0.1}
+                    step={0.1}
                     value={inputs.price_sensitivity}
                     disabled={isRunning}
-                    onChange={(e) => updateDemandConfig('price_sensitivity', Number(e.target.value), 0)}
+                    onChange={(e) => updateDemandConfig('price_sensitivity', Number(e.target.value), 0.1)}
                 />
             </div>
 
@@ -81,11 +67,11 @@ export function LogitInputsForm({inputs, updateDemandConfig, isRunning}: LogitDe
                 <input
                     type="number"
                     className={styles.input}
-                    min={0.5}
+                    min={0.1}
                     step={0.1}
                     value={inputs.logit_scale}
                     disabled={isRunning}
-                    onChange={(e) => updateDemandConfig('logit_scale', Number(e.target.value), 0.5)}
+                    onChange={(e) => updateDemandConfig('logit_scale', Number(e.target.value), 0.1)}
                 />
             </div>
 

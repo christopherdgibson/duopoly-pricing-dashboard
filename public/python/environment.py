@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Tuple
 
 from demand import IDemandModel
 
@@ -14,7 +15,9 @@ class DuopolyPricingEnv:
         p1 = self.prices[action1_idx]
         p2 = self.prices[action2_idx]
 
-        (q1, q2) = self.demand_model.get_demand(p1, p2)
+        q = self.demand_model.get_demand(p1, p2)
+        q1 = q[0]
+        q2 = q[1]
         
         profit1 = (p1 - self.cost[0]) * q1
         profit2 = (p2 - self.cost[1]) * q2
@@ -44,3 +47,39 @@ class DuopolyPricingEnv:
         
         # Generate N evenly spaced prices rounded to 2 decimal places
         return np.round(np.linspace(p_min, p_max, n_prices), 2)
+
+    def generate_price_grids(
+        demand: IDemandModel,
+        c1: float,
+        c2: float,
+        n_prices: int = 15,
+        allow_sub_cost: bool = False,
+        buffer_factor: float = 0.15
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Generates model-agnostic 1D price grids for Firm 1 and Firm 2.
+        
+        Ensures that both Bertrand-Nash and Joint Monopoly equilibrium prices 
+        fall comfortably within the grid interior.
+        """
+        # 1. Fetch benchmark prices polymorphically
+        p_bert1, p_bert2 = demand.bertrand_prices(c1, c2)
+        p_mono1, p_mono2 = demand.monopoly_prices(c1, c2)
+        
+        # 2. Determine lower bounds per firm
+        p1_min = c1 * 0.8 if allow_sub_cost else c1
+        p2_min = c2 * 0.8 if allow_sub_cost else c2
+        
+        # 3. Determine upper bounds (monopoly price + small buffer for visual padding)
+        # Ensure upper bound is at least higher than Bertrand price
+        max_target_1 = max(p_mono1, p_bert1)
+        max_target_2 = max(p_mono2, p_bert2)
+        
+        p1_max = max_target_1 + buffer_factor * (max_target_1 - c1)
+        p2_max = max_target_2 + buffer_factor * (max_target_2 - c2)
+        
+        # 4. Generate 1D price arrays
+        grid1 = np.round(np.linspace(p1_min, p1_max, n_prices), 2)
+        grid2 = np.round(np.linspace(p2_min, p2_max, n_prices), 2)
+        
+        return grid1, grid2

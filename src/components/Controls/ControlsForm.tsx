@@ -90,8 +90,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
               <select
                 className={styles.input}
                 value={payload.market.demand_type}
-                // disabled={isRunning}
-                disabled={true}
+                disabled={isRunning}
                 onChange={(e) => handleModelTypeChange(e.target.value as DemandTypeKey)}
               >
                 <option value={'linear'}>Linear Demand</option>

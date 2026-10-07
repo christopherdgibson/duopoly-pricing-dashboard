@@ -121,6 +121,12 @@ def get_benchmarks(config_dict: dict) -> tuple[float, float]:
 
     return market.benchmarks
 
+# if __name__ == "__main__":
+#     benchmarks = MarketBenchmarks(demand_type='linear', demand_intercept=100.0, demand_slope=3.0, elasticity_ij = 2.0, cost=5.0)
+#     print("--- Theoretical Economic Benchmarks ---")
+#     for key, val in benchmarks.summary.items():
+#         print(f"{key}: {val}")
+
 
 # def run_simulation_engine_asym(
 #     episodes: int,
