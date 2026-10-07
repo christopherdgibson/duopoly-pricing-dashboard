@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import type { FirmBenchmarkResults, FinalAverageProps } from '../../types';
-import { formatCurrencyValues } from '../../utils/currencyUtils';
-import styles from '../../App/App.module.css';
+import type { FirmBenchmarkResults, FinalAverageProps } from '../types';
+import { formatCurrencyValues } from '../utils/currencyUtils';
+import styles from '../App/App.module.css';
 
 interface CardProps {
     title?: string;
@@ -50,7 +50,7 @@ function FirmBenchmarksCard({benchmarks, showTitle = false, collapseCard = false
     );
         
     return (
-        <div className={styles.resultsRow} style={{maxHeight: collapseCard ? 0 : 100}}>
+        <div className={styles.resultsRow} style={{maxHeight: collapseCard ? 0 : 1000}}>
             <div className={styles.rowLabel} style={{opacity: showTitle ? 1 : 0}}>
                 {title}
             </div>
