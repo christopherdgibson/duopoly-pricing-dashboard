@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { FirmBenchmarkResults, FinalAverageProps } from '../types';
-import { formatCurrencyValues } from '../utils/currencyUtils';
+import { formatCurrencyValues, getNaNKeys } from '../utils/currencyUtils';
 import styles from '../App/App.module.css';
 
 interface CardProps {
@@ -35,17 +35,23 @@ export function BenchmarkResultsCard({title="Benchmark Results", benchmarks}: Be
 }
 
 function FirmBenchmarksCard({benchmarks, showTitle = false, collapseCard = false}: FirmBenchmarkCardProps) {
+    const title = benchmarks ? `Firm ${benchmarks.firm}` : 'Firm 2';
+    const failMessage = "No solution with current parameters";
     const benchmarksNull = {
         marginal_cost: '-',
         bertrand_price: '-',
         monopoly_price: '-'
     }
-    const title = benchmarks ? `Firm ${benchmarks.firm}` : 'Firm 2';
+
+    function formatBenchmarks(benchmarks: FirmBenchmarkResults | null) {
+        const NaNKeys = getNaNKeys(benchmarks);
+        if (!benchmarks) return benchmarksNull;
+
+        return formatCurrencyValues({obj: benchmarks, excludedKeys: ['firm'], NaNKeys: NaNKeys});
+    }
 
     const formattedBenchmarks = useMemo(
-        () => benchmarks ? formatCurrencyValues(benchmarks, [
-            'firm',
-        ]) : benchmarksNull,
+        () => formatBenchmarks(benchmarks),
         [benchmarks]
     );
         
@@ -63,13 +69,13 @@ function FirmBenchmarksCard({benchmarks, showTitle = false, collapseCard = false
                 </div>
                 <div className={styles.metricItem}>
                     <span className={styles.metricLabel}>Bertrand Price</span>
-                    <span className={styles.metricValue}>
+                    <span className={Number.isNaN(benchmarks?.bertrand_price) ? styles.metricError : styles.metricValue}>
                         {formattedBenchmarks.bertrand_price}
                     </span>
                 </div>
                 <div className={styles.metricItem}>
                     <span className={styles.metricLabel}>Monopoly Price</span>
-                    <span className={styles.metricValue}>
+                    <span className={Number.isNaN(benchmarks?.monopoly_price) ? styles.metricError : styles.metricValue}>
                         {formattedBenchmarks.monopoly_price}
                     </span>
                 </div>
@@ -85,12 +91,12 @@ export function SimulationResultsCard({ title="Simulation Results", final_averag
     if (!final_averages) return null;
 
     const formattedAverages = useMemo(
-        () => formatCurrencyValues(final_averages, [
-            'final_streak1',
-            'final_streak2',
-            'episodes_to_converge',
-        ]),
-        [final_averages]
+        () => formatCurrencyValues({obj: final_averages, 
+            excludedKeys: [
+                'final_streak1',
+                'final_streak2',
+                'episodes_to_converge',
+            ]}), [final_averages]
     );
 
     return (

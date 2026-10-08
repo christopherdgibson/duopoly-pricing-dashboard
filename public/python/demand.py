@@ -108,14 +108,22 @@ class LogitDemand:
         return exp1 / denom, exp2 / denom, exp0 / denom
 
     def bertrand_prices(self, c1: float, c2: float) -> np.ndarray:
-        results = self.solve_logit_bertrand(c1, c2)
+        try:
+            results = self.solve_logit_bertrand(c1, c2)
+            prices = results.prices
+        except:
+            prices = [np.nan, np.nan]
 
-        return results.prices
+        return prices
 
     def monopoly_prices(self, c1: float, c2: float) -> np.ndarray:
-        results = self.solve_logit_monopoly(c1, c2)
+        try:
+            results = self.solve_logit_monopoly(c1, c2)
+            prices = results.prices
+        except:
+            prices = [np.nan, np.nan]
 
-        return results.prices
+        return prices
 
     def logit_bertrand_foc(
         self,
@@ -246,7 +254,7 @@ class LogitDemand:
         raise TimeoutError("Monopoly solver failed to converge.")
 
 if __name__ == "__main__":
-    demand = LogitDemand(LogitDemandInputs(2, 2, 1, 1))
+    demand = LogitDemand(LogitDemandInputs(1, 1, 0.1, 0.1))
 
 
     pb = demand.bertrand_prices(1, 1)
@@ -254,6 +262,7 @@ if __name__ == "__main__":
     pm = demand.monopoly_prices(1, 1)
 
     pb_result = demand.solve_logit_bertrand(1, 1)
+    print('demand:', demand)
     print('results', pb_result)
     print('bertrand', pb)
     print('monopoly', pm)
