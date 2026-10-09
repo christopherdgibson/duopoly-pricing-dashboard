@@ -54,6 +54,27 @@ export interface ControlsBase {
   isRunning: boolean;
 }
 
+export interface CardInputs {
+  title: string;
+  latex?: string;
+  hint?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+}
+
+export interface ControlCardProps<T> extends ControlsBase {
+  inputKey: keyof T;
+  value: number | DemandTypeKey | undefined;
+  card: CardInputs;
+  updateDemandConfig: (field: keyof T, value: number, minValue?: number) => void;
+}
+
+export interface DemandProps<T> extends ControlsBase {
+  inputs: T;
+  updateDemandConfig: (field: keyof T, value: number, minValue?: number) => void;
+}
+
 export interface TrajectoryProps {
   episode: number;
   avg_price1: number;
