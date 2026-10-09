@@ -1,23 +1,27 @@
-import { useState } from 'react';
+import { ReactElement, useState } from 'react';
 import { MathJax, MathJaxContext } from 'better-react-mathjax';
 import { ExpandableMenu } from "../ExpandableMenu";
+import type { DemandTypeKey, NavTabKeys } from "../../types";
 
+import styles from '../../App/App.module.css';
 import './WelcomeView.css';
 
 export interface QuickstartCardItem {
   title: string;
-  description: string;
+  description: string | ReactElement<any, any>;
   badge?: string;
+  latexText?: string;
 }
 
 export interface WelcomeViewProps {
   marketCards?: QuickstartCardItem[];
-  demandCards?: QuickstartCardItem[][];
+  demandEquationCards?: QuickstartCardItem[]
+  demandCards?: Record<DemandTypeKey, QuickstartCardItem[]>;
   learningCards?: QuickstartCardItem[];
   simulationCards?: QuickstartCardItem[];
 }
 
-const MARKET_CARDS: QuickstartCardItem[] = [
+const MARKET_COST_CARDS: QuickstartCardItem[] = [
     {
         title: "Demand Model Selection",
         badge: "Linear / Logit",
@@ -27,6 +31,23 @@ const MARKET_CARDS: QuickstartCardItem[] = [
         title: "Firm Marginal Costs",
         badge: "c1, c2",
         description: "Constant marginal production costs for Firm 1 and Firm 2. Serves as the economic lower bound for sustainable competitive pricing."
+    },
+]
+const DEMAND_EQUATION_CARDS: QuickstartCardItem[] = [
+    {
+        title: "Linear Demand",
+        badge: "Linear",
+        description: "Quantities are calculated as direct linear functions of own and rival prices.",
+        latexText: "q_i = a - b\\cdot p_i + d\\cdot p_j"
+    },
+    {
+        title: "Multinomial Logit (MNL) Demand",
+        badge: "Logit",
+        description:
+            <>
+                Market shares are computed via softmax normalization against an outside option <MathJax inline>{"\\(v_0  \\)"}</MathJax>.
+            </>,
+        latexText: "q_i = \\frac{e^{(v_i - \\alpha_i\\cdot p_i)/\\mu}}{e^{v_0/\\mu} + \\sum_{j=1}^{N}e^{(v_i - \\alpha_i\\cdot p_i)/\\mu}}"
     },
 ];
 
@@ -70,6 +91,11 @@ const LOGIT_DEMAND_CARDS: QuickstartCardItem[] = [
         description: "Controls unobserved consumer preference variation and product differentiation. Higher values smooth market shares, making demand less price-sensitive."
     }
 ];
+
+const DEMAND_CARDS: Record<DemandTypeKey, QuickstartCardItem[]> = {
+    linear: LINEAR_DEMAND_CARDS,
+    logit: LOGIT_DEMAND_CARDS
+}
 
 const LEARNING_CARDS: QuickstartCardItem[] = [
     {
@@ -129,102 +155,119 @@ function CardGrid({cards}: {cards: QuickstartCardItem[]}) {
                     </div>
               </div>
             ))}
-          </div>
+        </div>
+    )
+}
+
+function DemandCardGrid({cards}: {cards: QuickstartCardItem[]}) {
+    return (
+        <div className="welcome-models-container">
+            {cards.map((card, idx) => (
+                <div 
+                    key={idx}
+                    className={'welcome-card-outer'}
+                >
+                    <div className="welcome-card-item">
+                        <h4 className="welcome-card-title">
+                            {card.title}
+                            {card.badge && <span className="welcome-badge">{card.badge}</span>}
+                        </h4>
+                        <p className="welcome-card-text">{card.description}</p>
+                        <code className="welcome-code-block">
+                            <MathJax>
+                                {`\\( ${card.latexText} \\)`}
+                            </MathJax>
+                        </code>
+                    </div>
+                </div>
+            ))}
+        </div>
     )
 }
 
 export function WelcomeView({
-    marketCards = MARKET_CARDS,
-    demandCards = [LINEAR_DEMAND_CARDS, LOGIT_DEMAND_CARDS],
+    marketCards = MARKET_COST_CARDS,
+    demandEquationCards = DEMAND_EQUATION_CARDS,
+    demandCards = DEMAND_CARDS,
     learningCards = LEARNING_CARDS,
     simulationCards = SIMULATION_CARDS
 }: WelcomeViewProps) {
-    const [activeTab, setActiveTab] = useState<'quickstart' | 'models'>('quickstart');
+    const [activeTab, setActiveTab] = useState<NavTabKeys>('market');
 
     return (
-        <div className="welcome-card">
+        <>
             <ExpandableMenu
+                className={styles.expandCard}
                 title={"Executive Guide & Simulation Instructions"}
                 classTitle={"welcome-subtitle"}
-                style={{ maxWidth: "56rem", margin: "auto" }}
+                style={{ maxWidth: "56rem", margin: "auto" }} //TODO: condition background on expanded
                 startExpanded={true}
                 expandElement={
-                <>
-
-                {/* Tab Navigation */}
-                <div className="welcome-nav-tabs">
-                    <button
-                        onClick={() => setActiveTab('quickstart')}
-                        className={`welcome-tab-btn ${activeTab === 'quickstart' ? 'active' : ''}`}
-                    >
-                        Quickstart & Parameters
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('models')}
-                        className={`welcome-tab-btn ${activeTab === 'models' ? 'active' : ''}`}
-                    >
-                        Model Mechanics & Equations
-                    </button>
-                </div>
-
-                {/* Tab 1: Quickstart & Simulation Parameters */}
-                {activeTab === 'quickstart' && (
-                    <div>
-                        {/* Learning Parameters Section */}
-                        <h3 className="welcome-section-heading">Market & Cost Inputs</h3>
-                        <CardGrid cards={marketCards}/>
-
-                        <h3 className="welcome-section-heading">Demand Parameters</h3>
-                        <h4 className="welcome-section-subheading">Linear Demand</h4>
-                        <CardGrid cards={demandCards[0]}/>
-
-                        <h4 className="welcome-section-subheading">Logit Demand</h4>
-                        <CardGrid cards={demandCards[1]}/>
-
-                        <h3 className="welcome-section-heading">Learning Parameters</h3>
-                        <CardGrid cards={learningCards}/>
-
-                        {/* Simulation & Convergence Parameters Section */}
-                        <h3 className="welcome-section-heading">Simulation & Solver Parameters</h3>
-                        <CardGrid cards={simulationCards}/>
-                    </div>
-                )}
-
-                {/* Tab 2: Model Reference */}
-                {activeTab === 'models' && (
-                    <MathJaxContext>
-                        <div className="welcome-models-container">
-                            <div className={'welcome-card-outer'}>
-                                <div className="welcome-card-item">
-                                    <h4 className="welcome-card-title">Linear Demand</h4>
-                                    <p className="welcome-card-text">
-                                        Quantities are calculated as direct linear functions of own and rival prices.
-                                    </p>
-                                    <code className="welcome-code-block">
-                                        <MathJax>
-                                            {"\\(q_i = a - b\\cdot p_i + d\\cdot p_j\\)"}
-                                        </MathJax>
-                                    </code>
-                                </div>
-                            </div>
-
-                            <div className={'welcome-card-outer'}>
-                                <div className="welcome-card-item">
-                                    <h4 className="welcome-card-title">Multinomial Logit (MNL) Demand</h4>
-                                    <p className="welcome-card-text">
-                                        Market shares are computed via softmax normalization against an outside option <MathJax inline>{"\\(v_0  \\)"}</MathJax>.
-                                    </p>
-                                    <code className="welcome-code-block">
-                                        <MathJax>
-                                            {"\\(q_i = \\frac{e^{(v_i - \\alpha_i\\cdot p_i)/\\mu}}{e^{v_0/\\mu} + \\sum_{j=1}^{N}e^{(v_i - \\alpha_i\\cdot p_i)/\\mu}}  \\)"}
-                                        </MathJax>
-                                    </code>
-                                </div>
-                            </div>
+                    <>
+                        {/* Tab Navigation */}
+                        <div className="welcome-nav-tabs">
+                            <button
+                                onClick={() => setActiveTab('market')}
+                                className={`welcome-tab-btn ${activeTab === 'market' ? 'active' : ''}`}
+                            >
+                                Market & Costs
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('demand-parameters')}
+                                className={`welcome-tab-btn ${activeTab === 'demand-parameters' ? 'active' : ''}`}
+                            >
+                                Demand Parameters
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('learning-simulation')}
+                                className={`welcome-tab-btn ${activeTab === 'learning-simulation' ? 'active' : ''}`}
+                            >
+                                Learning & Simulation
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('show-all')}
+                                className={`welcome-tab-btn ${activeTab === 'show-all' ? 'active' : ''}`}
+                            >
+                                Show All
+                            </button>
                         </div>
-                    </MathJaxContext>
-                )}
-            </>}/>
-        </div>
+
+                        {/* Tab 1: Market & Cost Inputs */}
+                        {(activeTab === 'market' || activeTab === 'show-all') && (
+                            <MathJaxContext>
+                                <h3 className="welcome-section-heading">Market & Cost Inputs</h3>
+                                <CardGrid cards={marketCards}/>
+                                <DemandCardGrid cards={demandEquationCards}/>
+                            </MathJaxContext>
+                        )}
+
+                        {/* Tab 2: Demand Parameters */}
+                        {(activeTab === 'demand-parameters' || activeTab === 'show-all') && (
+                            <div>
+                                <h3 className="welcome-section-heading">Demand Parameters</h3>
+                                <h4 className="welcome-section-subheading">Linear Demand</h4>
+                                <CardGrid cards={demandCards['linear']}/>
+
+                                <h4 className="welcome-section-subheading">Logit Demand</h4>
+                                <CardGrid cards={demandCards['logit']}/>
+                            </div>
+                        )}
+
+                        {/* Tab 3: Learning & Simulation Parameters */}
+                        {(activeTab === 'learning-simulation' || activeTab === 'show-all') && (
+                            <div>
+                                {/* Learning Parameters */}
+                                <h3 className="welcome-section-heading">Learning Parameters</h3>
+                                <CardGrid cards={learningCards}/>
+
+                                {/* Simulation & Convergence Parameters */}
+                                <h3 className="welcome-section-heading">Simulation & Solver Parameters</h3>
+                                <CardGrid cards={simulationCards}/>
+                            </div>
+                        )}
+                    </>
+                }
+            />
+        </>
     );
 };

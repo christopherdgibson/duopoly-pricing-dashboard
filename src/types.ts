@@ -1,5 +1,6 @@
 export type DemandTypeKey = 'linear' | 'logit';
 
+export type NavTabKeys =  | 'market' | 'demand-parameters' | 'learning-simulation' | 'show-all';
 
 export type DemandInputs = LinearDemandInputs | LogitDemandInputs;
 

@@ -4,17 +4,19 @@ import styles from '../App/App.module.css'
 
 interface ExpandableMenuProps {
     title: string;
+    className?: string;
     classTitle?: string;
     style?: CSSProperties;
     startExpanded?: boolean;
     expandElement: JSX.Element;
+    override?: boolean
 }
 
-export function ExpandableMenu({title, classTitle = styles.subTitle, style, startExpanded = false, expandElement }: ExpandableMenuProps) {
+export function ExpandableMenu({title, className = styles.expandBtn, classTitle = styles.subTitle, style, startExpanded = true, expandElement, override }: ExpandableMenuProps) {
     const [isExpanded, setIsExpanded] = useState<boolean>(startExpanded);
 
     return (
-        <div className={`${styles.expandBtn}`} style={style}>
+        <div className={className} style={style}>
             <h3 className={`${classTitle} ${styles.expandTitle}`} aria-expanded={isExpanded} onClick={(e) => setIsExpanded(prev => !prev)}>
                 {title}
                 <svg className={styles.expandChevron} width="12" height="12" viewBox="0 0 12 12">
