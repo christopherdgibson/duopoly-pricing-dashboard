@@ -74,288 +74,289 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
 
   return (
     <MathJaxContext>
-      <ExpandableMenu title={"Model Parameters"} className={styles.expandCard} style={{backgroundColor: 'white'}} classTitle='welcome-subtitle' expandElement={
-        <>
-          {/* Tab Navigation */}
-          <div className="welcome-nav-tabs">
-              <button
-                  onClick={() => setActiveTab('market')}
-                  className={`welcome-tab-btn ${activeTab === 'market' ? 'active' : ''}`}
-              >
-                  Market & Costs
-              </button>
-              <button
-                  onClick={() => setActiveTab('demand-parameters')}
-                  className={`welcome-tab-btn ${activeTab === 'demand-parameters' ? 'active' : ''}`}
-              >
-                  Demand Parameters
-              </button>
-              <button
-                  onClick={() => setActiveTab('learning-simulation')}
-                  className={`welcome-tab-btn ${activeTab === 'learning-simulation' ? 'active' : ''}`}
-              >
-                  Learning & Simulation
-              </button>
-              <button
-                  onClick={() => setActiveTab('show-all')}
-                  className={`welcome-tab-btn ${activeTab === 'show-all' ? 'active' : ''}`}
-              >
-                  Show All
-              </button>
-              {/* <button
-                  onClick={() => {setOverride(prev => !prev);
-                    console.log('override', override);
-                  }}
-                  className={`welcome-tab-btn`}
-              >
-                  Show All
-              </button> */}
-          </div>
+      <div className={`${styles.expandCard} ${styles.expandBtn}`}>
+        <ExpandableMenu title={"Model Parameters"} className={styles.controlsSection} classTitle={styles.resultsTitle} expandElement={
+          <>
+            {/* Tab Navigation */}
+            <div className="welcome-nav-tabs">
+                <button
+                    onClick={() => setActiveTab('market')}
+                    className={`welcome-tab-btn ${activeTab === 'market' ? 'active' : ''}`}
+                >
+                    Market & Costs
+                </button>
+                <button
+                    onClick={() => setActiveTab('demand-parameters')}
+                    className={`welcome-tab-btn ${activeTab === 'demand-parameters' ? 'active' : ''}`}
+                >
+                    Demand Parameters
+                </button>
+                <button
+                    onClick={() => setActiveTab('learning-simulation')}
+                    className={`welcome-tab-btn ${activeTab === 'learning-simulation' ? 'active' : ''}`}
+                >
+                    Learning & Simulation
+                </button>
+                <button
+                    onClick={() => setActiveTab('show-all')}
+                    className={`welcome-tab-btn ${activeTab === 'show-all' ? 'active' : ''}`}
+                >
+                    Show All
+                </button>
+                {/* <button
+                    onClick={() => {setOverride(prev => !prev);
+                      console.log('override', override);
+                    }}
+                    className={`welcome-tab-btn`}
+                >
+                    Show All
+                </button> */}
+            </div>
 
-          {(activeTab === 'market' || activeTab === 'show-all') && (
-            <>
-              {/* Market Demand */}
-              <ExpandableMenu title={"Market Demand"} override={override} expandElement={
-                <div className={styles.grid}>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      <span>Demand Curve (<em>q</em>)</span>
-                      <span className={styles.hint}>Firm Demand</span>
-                    </label>
-                    <select
-                      className={styles.input}
-                      value={payload.market.demand_type}
-                      disabled={isRunning}
-                      onChange={(e) => handleModelTypeChange(e.target.value as DemandTypeKey)}
-                    >
-                      <option value={'linear'}>Linear Demand</option>
-                      <option value={'logit'}>Logit Demand</option>
-                    </select>
-                  </div>
-                  <div className={styles.selectedDropdown}>
-                    {payload.market.demand_type === 'linear' && 
-                      <MathJax>
-                        {"\\(q_i = a - b\\cdot p_i + d\\cdot p_j\\)"}
-                      </MathJax>
-                    }
-                    {payload.market.demand_type === 'logit' && 
-                      <MathJax>
-                        {"\\(q_i = \\frac{e^{\\frac{v_i - \\alpha_ip_i}{\\mu}}}{1 + \\sum_{j=1}^{N}e^{\\frac{v_j - \\alpha_jp_j}{\\mu}}}  \\)"}
-                      </MathJax>
-                    }
-                  </div>
-                </div>
-              }/>
-
-              {/* Marginal Cost */}
-              <ExpandableMenu title={"Cost Parameters"} override={override} expandElement={
-                <div className={styles.flexGrid}>        
-                  <div className={`${styles.fieldGroup} ${styles.flexGroup}`}>
-                    <label className={styles.label}>
-                      <span>Marginal Cost 1 <MathJax inline={true}>({"\\(c_1  \\)"})</MathJax></span>
-                      <span className={styles.hint}>Firm 1 unit cost</span>
-                    </label>
-                    <input
-                      type="number"
-                      className={styles.input}
-                      min={0}
-                      value={payload.market.marginal_cost_1}
-                      disabled={isRunning}
-                      onChange={(e) => handleCostChange(Number(e.target.value))}
-                    />
-                  </div>
-
-                  <div className={`${styles.inputGroup} ${styles.flexGroup}`}>
-                    <div className={`${styles.fieldGroup} ${styles.inputLeft}`}>
-                      <label className={styles.label}>
-                        <span><MathJax inline={true}>{"\\(c_1 \\ne c_2  \\)"}</MathJax></span>
-                      </label>
-                      <div className={styles.inputLeft}>
-                        <input 
-                          type="checkbox"
-                          className={styles.input}
-                          disabled={isRunning}
-                          onChange={(e) => toggleAsymmetricCost(e.target.checked)}
-                        />
-                    </div>
-                    </div>
-                    <div className={`${styles.fieldGroup} `}>
-                      <label className={styles.label}>
-                        <span>Marginal Cost 2 <MathJax inline={true}>({"\\(c_2  \\)"})</MathJax></span>
-                        <span className={styles.hint}>Firm 2 unit cost</span>
-                      </label>
-                        <input
-                          type="number"
-                          className={styles.input}
-                          min={0}
-                          value={payload.market.marginal_cost_2}
-                          disabled={!asymmetricCost || isRunning}
-                          onChange={(e) => handleConfigChange('market', 'marginal_cost_2', Number(e.target.value))}
-                        />
-                    </div>
-                  </div>
-                </div>
-              }/>
-            </>
-          )}
-
-          {(activeTab === 'demand-parameters' || activeTab === 'show-all') && (
-            <ExpandableMenu title={"Demand Parameters"} override={override} expandElement={
+            {(activeTab === 'market' || activeTab === 'show-all') && (
               <>
-                {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
-                {demandInputs && demandInputs.type=='logit' && <LogitInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
-              </>
-            }/>
-          )}
+                {/* Market Demand */}
+                <ExpandableMenu title={"Market Demand"} override={override} expandElement={
+                  <div className={styles.grid}>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label}>
+                        <span>Demand Curve (<em>q</em>)</span>
+                        <span className={styles.hint}>Firm Demand</span>
+                      </label>
+                      <select
+                        className={styles.input}
+                        value={payload.market.demand_type}
+                        disabled={isRunning}
+                        onChange={(e) => handleModelTypeChange(e.target.value as DemandTypeKey)}
+                      >
+                        <option value={'linear'}>Linear Demand</option>
+                        <option value={'logit'}>Logit Demand</option>
+                      </select>
+                    </div>
+                    <div className={styles.selectedDropdown}>
+                      {payload.market.demand_type === 'linear' && 
+                        <MathJax>
+                          {"\\(q_i = a - b\\cdot p_i + d\\cdot p_j\\)"}
+                        </MathJax>
+                      }
+                      {payload.market.demand_type === 'logit' && 
+                        <MathJax>
+                          {"\\(q_i = \\frac{e^{\\frac{v_i - \\alpha_ip_i}{\\mu}}}{1 + \\sum_{j=1}^{N}e^{\\frac{v_j - \\alpha_jp_j}{\\mu}}}  \\)"}
+                        </MathJax>
+                      }
+                    </div>
+                  </div>
+                }/>
 
-          {(activeTab === 'learning-simulation' || activeTab === 'show-all') && (
-            <>
-              <ExpandableMenu title={"Learning Parameters"} override={override} expandElement={
-                <div className={styles.grid}>
-                  {/* Learning Rate (Alpha) */}
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      <span>Learning Rate (<em>&alpha;</em>)</span>
-                      <span className={styles.hint}>0.01 - 1.0</span>
-                    </label>
-                    <div className={styles.inputGroup}>
-                      <div className={styles.inputLeft}>
+                {/* Marginal Cost */}
+                <ExpandableMenu title={"Cost Parameters"} override={override} expandElement={
+                  <div className={styles.flexGrid}>        
+                    <div className={`${styles.fieldGroup} ${styles.flexGroup}`}>
+                      <label className={styles.label}>
+                        <span>Marginal Cost 1 <MathJax inline={true}>({"\\(c_1  \\)"})</MathJax></span>
+                        <span className={styles.hint}>Firm 1 unit cost</span>
+                      </label>
+                      <input
+                        type="number"
+                        className={styles.input}
+                        min={0}
+                        value={payload.market.marginal_cost_1}
+                        disabled={isRunning}
+                        onChange={(e) => handleCostChange(Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className={`${styles.inputGroup} ${styles.flexGroup}`}>
+                      <div className={`${styles.fieldGroup} ${styles.inputLeft}`}>
+                        <label className={styles.label}>
+                          <span><MathJax inline={true}>{"\\(c_1 \\ne c_2  \\)"}</MathJax></span>
+                        </label>
+                        <div className={styles.inputLeft}>
+                          <input 
+                            type="checkbox"
+                            className={styles.input}
+                            disabled={isRunning}
+                            onChange={(e) => toggleAsymmetricCost(e.target.checked)}
+                          />
+                      </div>
+                      </div>
+                      <div className={`${styles.fieldGroup} `}>
+                        <label className={styles.label}>
+                          <span>Marginal Cost 2 <MathJax inline={true}>({"\\(c_2  \\)"})</MathJax></span>
+                          <span className={styles.hint}>Firm 2 unit cost</span>
+                        </label>
+                          <input
+                            type="number"
+                            className={styles.input}
+                            min={0}
+                            value={payload.market.marginal_cost_2}
+                            disabled={!asymmetricCost || isRunning}
+                            onChange={(e) => handleConfigChange('market', 'marginal_cost_2', Number(e.target.value))}
+                          />
+                      </div>
+                    </div>
+                  </div>
+                }/>
+              </>
+            )}
+
+            {(activeTab === 'demand-parameters' || activeTab === 'show-all') && (
+              <ExpandableMenu title={"Demand Parameters"} override={override} expandElement={
+                <>
+                  {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
+                  {demandInputs && demandInputs.type=='logit' && <LogitInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
+                </>
+              }/>
+            )}
+
+            {(activeTab === 'learning-simulation' || activeTab === 'show-all') && (
+              <>
+                <ExpandableMenu title={"Learning Parameters"} override={override} expandElement={
+                  <div className={styles.grid}>
+                    {/* Learning Rate (Alpha) */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label}>
+                        <span>Learning Rate (<em>&alpha;</em>)</span>
+                        <span className={styles.hint}>0.01 - 1.0</span>
+                      </label>
+                      <div className={styles.inputGroup}>
+                        <div className={styles.inputLeft}>
+                          <input
+                            type="number"
+                            className={styles.input}
+                            value={payload.market.alpha}
+                            disabled={isRunning}
+                            min={0.01}
+                            max={1.0}
+                            step={0.01}
+                            onChange={(e) => handleConfigChange('market', 'alpha', Number(e.target.value))}
+                          />
+                        </div>
                         <input
-                          type="number"
-                          className={styles.input}
+                          className={styles.inputSlider}
+                          type="range"
                           value={payload.market.alpha}
-                          disabled={isRunning}
                           min={0.01}
                           max={1.0}
                           step={0.01}
-                          onChange={(e) => handleConfigChange('market', 'alpha', Number(e.target.value))}
-                        />
+                          onChange={(e) => handleConfigChange('market', 'alpha', Number(parseFloat(e.target.value).toFixed(2)))} />
                       </div>
-                      <input
-                        className={styles.inputSlider}
-                        type="range"
-                        value={payload.market.alpha}
-                        min={0.01}
-                        max={1.0}
-                        step={0.01}
-                        onChange={(e) => handleConfigChange('market', 'alpha', Number(parseFloat(e.target.value).toFixed(2)))} />
                     </div>
-                  </div>
 
-                  {/* Epsilon */}
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      <span>Exploration (<em>&epsilon;</em>)</span>
-                      <span className={styles.hint}>Initial rate</span>
-                    </label>
-                    <div className={styles.inputGroup}>
-                      <div className={styles.inputLeft}>
+                    {/* Epsilon */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label}>
+                        <span>Exploration (<em>&epsilon;</em>)</span>
+                        <span className={styles.hint}>Initial rate</span>
+                      </label>
+                      <div className={styles.inputGroup}>
+                        <div className={styles.inputLeft}>
+                          <input
+                            type="number"
+                            className={styles.input}
+                            value={payload.market.epsilon}
+                            disabled={isRunning}
+                            min={0.0}
+                            max={1.0}
+                            step={0.05}
+                            onChange={(e) => handleConfigChange('market', 'epsilon', Number(e.target.value))}
+                          />
+                        </div>
                         <input
-                          type="number"
-                          className={styles.input}
+                          className={styles.inputSlider}
+                          type="range"
                           value={payload.market.epsilon}
                           disabled={isRunning}
                           min={0.0}
                           max={1.0}
                           step={0.05}
-                          onChange={(e) => handleConfigChange('market', 'epsilon', Number(e.target.value))}
-                        />
+                          onChange={(e) => handleConfigChange('market', 'epsilon', Number(parseFloat(e.target.value).toFixed(2)))}/>
                       </div>
+                    </div>
+                  </div>
+                }/>
+
+                <ExpandableMenu title={"Simulation Parameters"} override={override} expandElement={
+                  <div className={styles.grid}>
+                    {/* Episodes */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label}>
+                        <span>Episodes</span>
+                        <span className={styles.hint}>Total iterations</span>
+                      </label>
                       <input
-                        className={styles.inputSlider}
-                        type="range"
-                        value={payload.market.epsilon}
+                        type="number"
+                        className={styles.input}
+                        value={payload.run.episodes}
+                        disabled={payload.run.convergence || isRunning}
+                        min={100}
+                        step={100}
+                        onChange={(e) => handleConfigChange('run', 'episodes', Number(e.target.value))}
+                      />
+                    </div>
+
+                    {/* Window Size */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label}>
+                        <span>Window Size</span>
+                        <span className={styles.hint}>Number iterations per group</span>
+                      </label>
+                      <input
+                        type="number"
+                        className={styles.input}
+                        value={payload.run.window_size}
                         disabled={isRunning}
-                        min={0.0}
-                        max={1.0}
-                        step={0.05}
-                        onChange={(e) => handleConfigChange('market', 'epsilon', Number(parseFloat(e.target.value).toFixed(2)))}/>
+                        min={1}
+                        max={payload.run.episodes}
+                        step={1}
+                        onChange={(e) => handleConfigChange('run', 'window_size', Number(e.target.value))}
+                      />
                     </div>
-                  </div>
-                </div>
-              }/>
 
-              <ExpandableMenu title={"Simulation Parameters"} override={override} expandElement={
-                <div className={styles.grid}>
-                  {/* Episodes */}
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      <span>Episodes</span>
-                      <span className={styles.hint}>Total iterations</span>
-                    </label>
-                    <input
-                      type="number"
-                      className={styles.input}
-                      value={payload.run.episodes}
-                      disabled={payload.run.convergence || isRunning}
-                      min={100}
-                      step={100}
-                      onChange={(e) => handleConfigChange('run', 'episodes', Number(e.target.value))}
-                    />
-                  </div>
-
-                  {/* Window Size */}
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      <span>Window Size</span>
-                      <span className={styles.hint}>Number iterations per group</span>
-                    </label>
-                    <input
-                      type="number"
-                      className={styles.input}
-                      value={payload.run.window_size}
-                      disabled={isRunning}
-                      min={1}
-                      max={payload.run.episodes}
-                      step={1}
-                      onChange={(e) => handleConfigChange('run', 'window_size', Number(e.target.value))}
-                    />
-                  </div>
-
-                  {/* Convergence */}
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      <span>Convergence</span>
-                      <span className={styles.hint}>Episodes for convergence</span>
-                    </label>
-                    <div className={styles.inputGroup}>
-                      <div className={styles.inputLeft}>
-                        <input
-                          type="checkbox"
-                          className={styles.input}
-                          disabled={isRunning}
-                          onChange={(e) => handleConfigChange('run', 'convergence', e.target.checked)}
-                        />
+                    {/* Convergence */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label}>
+                        <span>Convergence</span>
+                        <span className={styles.hint}>Episodes for convergence</span>
+                      </label>
+                      <div className={styles.inputGroup}>
+                        <div className={styles.inputLeft}>
+                          <input
+                            type="checkbox"
+                            className={styles.input}
+                            disabled={isRunning}
+                            onChange={(e) => handleConfigChange('run', 'convergence', e.target.checked)}
+                          />
+                        </div>
+                          <input
+                            type="number"
+                            className={styles.input}
+                            value={payload.run.converge_threshold}
+                            disabled={!payload.run.convergence || isRunning}
+                            min={1}
+                            max={payload.run.episodes}
+                            step={1}
+                            onChange={(e) => handleConfigChange('run', 'converge_threshold', Number(e.target.value))}
+                          />
                       </div>
-                        <input
-                          type="number"
-                          className={styles.input}
-                          value={payload.run.converge_threshold}
-                          disabled={!payload.run.convergence || isRunning}
-                          min={1}
-                          max={payload.run.episodes}
-                          step={1}
-                          onChange={(e) => handleConfigChange('run', 'converge_threshold', Number(e.target.value))}
-                        />
                     </div>
                   </div>
-                </div>
-              }/>
-            </>
-          )}
-        
-          {/* Run Button */}
-          <div className={styles.actions}>
-            <button
-              className={styles.primaryButton}
-              onClick={onRunSimulation}
-              disabled={isRunning}
-            >
-              {isRunning ? 'Running Simulation...' : 'Run Simulation'}
-            </button>
-          </div>
-        </>
-      }/>
+                }/>
+              </>
+            )}
+          </>
+        }/>
+        {/* Run Button */}
+        <div className={styles.actions}>
+          <button
+            className={styles.primaryButton}
+            onClick={onRunSimulation}
+            disabled={isRunning}
+          >
+            {isRunning ? 'Running Simulation...' : 'Run Simulation'}
+          </button>
+        </div>
+      </div>
     </MathJaxContext>
   );
 };

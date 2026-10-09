@@ -197,7 +197,7 @@ export function WelcomeView({
     return (
         <>
             <ExpandableMenu
-                className={styles.expandCard}
+                className={styles.welcomeCard}
                 title={"Executive Guide & Simulation Instructions"}
                 classTitle={"welcome-subtitle"}
                 style={{ maxWidth: "56rem", margin: "auto" }} //TODO: condition background on expanded

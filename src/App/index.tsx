@@ -161,13 +161,13 @@ export default function App() {
   }
 
   return (
-    <div className="welcome-card">
+    <div className={styles.appContainer}>
       <h1 className={styles.pageTitle}>Duopoly Pricing Engine
           <span className={styles.badge}>Q-Learning Algorithm</span>
       </h1>
       <WelcomeView />
 
-      <div className={styles.container}>
+      <div className={styles.simulationContainer}>
         <Controls
           payload={payload}
           handleModelTypeChange={handleModelTypeChange}
