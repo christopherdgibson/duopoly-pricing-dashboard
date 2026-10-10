@@ -4,6 +4,7 @@ import styles from '../../App/App.module.css';
 import { ExpandableMenu } from '../../components/ExpandableMenu'
 import { LinearInputsForm } from './DemandForms/LinearInputsForm';
 import { LogitInputsForm } from './DemandForms/LogitInputsForm';
+import { roundNumber } from '../../utils/numberUtils';
 import type { ControlsBase, DemandInputs, DemandInputsMap, DemandTypeKey, NavTabKeys, SimulationPayload } from '../../types';
 
 export interface ControlsProps extends ControlsBase {
@@ -48,9 +49,11 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
   const handleDemandChange = <F extends keyof DemandInputsMap[typeof payload.market.demand_type]>(
     field: F,
     value: number,
-    minValue?: number
+    minValue?: number,
+    maxValue?: number
   ) => {
-    if (minValue !== undefined && typeof(value) == 'number' && value < minValue){
+    if ((minValue !== undefined && typeof(value) == 'number' && value < minValue) || (maxValue !== undefined && typeof(value) == 'number' && value > maxValue)){
+      console.log(`Tried to set ${field} to ${value} but its allowable bounds are ${minValue}, ${maxValue}`);
       return;
     }
     onChange({
@@ -59,7 +62,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
         ...payload.market,
         demand_inputs: {
           ...payload.market.demand_inputs,
-          [field]: value,
+          [field]: roundNumber(value, 1)
         },
       } as typeof payload.market, // Cast ensures TS knows the union shape remains intact
     });
@@ -203,7 +206,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
             {(activeTab === 'demand-parameters' || activeTab === 'show-all') && (
               <ExpandableMenu title={"Demand Parameters"} override={override} expandElement={
                 <>
-                  {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
+                  {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue, maxValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue, maxValue)} isRunning={isRunning} />}
                   {demandInputs && demandInputs.type=='logit' && <LogitInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
                 </>
               }/>
