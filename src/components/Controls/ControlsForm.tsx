@@ -16,7 +16,6 @@ export interface ControlsProps extends ControlsBase {
 
 export default function Controls({payload, handleModelTypeChange, onChange, onRunSimulation, isRunning}: ControlsProps) {
   const [activeTab, setActiveTab] = useState<NavTabKeys>('market');
-  const [override, setOverride] = useState<boolean>(true);
   const [asymmetricCost, setAsymmetricCost] = useState<boolean>(false);
   const demandInputs: DemandInputs = payload.market.demand_inputs;
 
@@ -78,7 +77,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
   return (
     <MathJaxContext>
       <div className={`${styles.expandCard} ${styles.expandBtn}`}>
-        <ExpandableMenu title={"Model Parameters"} className={styles.controlsSection} classTitle={styles.resultsTitle} expandElement={
+        <ExpandableMenu title={"Model Parameters"} className={styles.controlsSection} classTitle={styles.resultsTitle} nestedElement={
           <>
             {/* Tab Navigation */}
             <div className="welcome-nav-tabs">
@@ -106,20 +105,12 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                 >
                     Show All
                 </button>
-                {/* <button
-                    onClick={() => {setOverride(prev => !prev);
-                      console.log('override', override);
-                    }}
-                    className={`welcome-tab-btn`}
-                >
-                    Show All
-                </button> */}
             </div>
 
             {(activeTab === 'market' || activeTab === 'show-all') && (
               <>
                 {/* Market Demand */}
-                <ExpandableMenu title={"Market Demand"} override={override} expandElement={
+                <ExpandableMenu key={`${activeTab}-market`} title={"Market Demand"} nestedElement={
                   <div className={styles.grid}>
                     <div className={styles.fieldGroup}>
                       <label className={styles.label}>
@@ -152,7 +143,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                 }/>
 
                 {/* Marginal Cost */}
-                <ExpandableMenu title={"Cost Parameters"} override={override} expandElement={
+                <ExpandableMenu key={`${activeTab}-cost`} title={"Cost Parameters"} nestedElement={
                   <div className={styles.flexGrid}>        
                     <div className={`${styles.fieldGroup} ${styles.flexGroup}`}>
                       <label className={styles.label}>
@@ -204,7 +195,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
             )}
 
             {(activeTab === 'demand-parameters' || activeTab === 'show-all') && (
-              <ExpandableMenu title={"Demand Parameters"} override={override} expandElement={
+              <ExpandableMenu key={`${activeTab}-demand`} title={"Demand Parameters"} nestedElement={
                 <>
                   {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue, maxValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue, maxValue)} isRunning={isRunning} />}
                   {demandInputs && demandInputs.type=='logit' && <LogitInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
@@ -214,7 +205,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
 
             {(activeTab === 'learning-simulation' || activeTab === 'show-all') && (
               <>
-                <ExpandableMenu title={"Learning Parameters"} override={override} expandElement={
+                <ExpandableMenu key={`${activeTab}-learn`} title={"Learning Parameters"} nestedElement={
                   <div className={styles.grid}>
                     {/* Learning Rate (Alpha) */}
                     <div className={styles.fieldGroup}>
@@ -279,7 +270,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                   </div>
                 }/>
 
-                <ExpandableMenu title={"Simulation Parameters"} override={override} expandElement={
+                <ExpandableMenu key={`${activeTab}-sim`} title={"Simulation Parameters"} nestedElement={
                   <div className={styles.grid}>
                     {/* Episodes */}
                     <div className={styles.fieldGroup}>

@@ -202,7 +202,7 @@ export function WelcomeView({
                 classTitle={"welcome-subtitle"}
                 style={{ maxWidth: "56rem", margin: "auto" }} //TODO: condition background on expanded
                 startExpanded={true}
-                expandElement={
+                nestedElement={
                     <>
                         {/* Tab Navigation */}
                         <div className="welcome-nav-tabs">

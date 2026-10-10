@@ -8,11 +8,10 @@ interface ExpandableMenuProps {
     classTitle?: string;
     style?: CSSProperties;
     startExpanded?: boolean;
-    expandElement: JSX.Element;
-    override?: boolean
+    nestedElement: JSX.Element;
 }
 
-export function ExpandableMenu({title, className = styles.expandBtn, classTitle = styles.subTitle, style, startExpanded = true, expandElement, override }: ExpandableMenuProps) {
+export function ExpandableMenu({title, className = styles.expandBtn, classTitle = styles.subTitle, style, startExpanded = true, nestedElement }: ExpandableMenuProps) {
     const [isExpanded, setIsExpanded] = useState<boolean>(startExpanded);
 
     return (
@@ -25,7 +24,7 @@ export function ExpandableMenu({title, className = styles.expandBtn, classTitle 
             </h3>
             <div className={styles.expandGroup} style={isExpanded ? {maxHeight:'2500px'} : {maxHeight:0}}>
                 <div className={styles.expandGroupInner}>
-                    {expandElement}
+                    {nestedElement}
                 </div>
             </div>
         </div>
