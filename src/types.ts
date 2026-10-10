@@ -64,15 +64,20 @@ export interface CardInputs {
 }
 
 export interface ControlCardProps<T> extends ControlsBase {
-  inputKey: keyof T;
+  inputKey: T;
   value: number | DemandTypeKey | undefined;
   card: CardInputs;
-  updateDemandConfig: (field: keyof T, value: number, minValue?: number) => void;
+  updateDemandConfig: (field: T, value: number, minValue?: number) => void;
 }
 
 export interface DemandProps<T> extends ControlsBase {
   inputs: T;
   updateDemandConfig: (field: keyof T, value: number, minValue?: number) => void;
+}
+
+export interface InputProps<T extends Record<string, any>> extends DemandProps<T> {
+  inputKeys: Array<Extract<keyof T, string>>;
+  cards: Record<Extract<keyof T, string>, CardInputs>;
 }
 
 export interface TrajectoryProps {
