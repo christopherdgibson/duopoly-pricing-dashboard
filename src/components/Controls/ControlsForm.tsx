@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { MathJax, MathJaxContext } from 'better-react-mathjax';
-import styles from '../../App/App.module.css';
 import { ExpandableMenu } from '../../components/ExpandableMenu'
 import { LinearInputsForm } from './DemandForms/LinearInputsForm';
 import { LogitInputsForm } from './DemandForms/LogitInputsForm';
 import { roundNumber } from '../../utils/numberUtils';
+
+import styles from '../../App/App.module.css';
 import type { ControlsBase, DemandInputs, DemandInputsMap, DemandTypeKey, NavTabKeys, SimulationPayload } from '../../types';
 
 export interface ControlsProps extends ControlsBase {
@@ -109,7 +110,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
 
             <div className={'active-market'}>
               {/* Market Demand */}
-              <ExpandableMenu title={"Market Demand"} nestedElement={
+              <ExpandableMenu title={"Market Demand"} override={activeTab} nestedElement={
                 <div className={styles.grid}>
                   <div className={styles.fieldGroup}>
                     <label className={styles.label}>
@@ -142,7 +143,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
               }/>
 
               {/* Marginal Cost */}
-              <ExpandableMenu title={"Cost Parameters"} nestedElement={
+              <ExpandableMenu title={"Cost Parameters"} override={activeTab} nestedElement={
                 <div className={styles.flexGrid}>        
                   <div className={`${styles.fieldGroup} ${styles.flexGroup}`}>
                     <label className={styles.label}>
@@ -192,7 +193,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
               }/>
             </div>
 
-            <ExpandableMenu className={`${styles.expandBtn} active-demand`} title={"Demand Parameters"} nestedElement={
+            <ExpandableMenu className={`${styles.expandBtn} active-demand`} title={"Demand Parameters"} override={activeTab} nestedElement={
               <>
                 {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue, maxValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue, maxValue)} isRunning={isRunning} />}
                 {demandInputs && demandInputs.type=='logit' && <LogitInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
@@ -200,7 +201,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
             }/>
 
             <div className={'active-learning-sim'}>
-              <ExpandableMenu title={"Learning Parameters"} nestedElement={
+              <ExpandableMenu title={"Learning Parameters"} override={activeTab} nestedElement={
                 <div className={styles.grid}>
                   {/* Learning Rate (Alpha) */}
                   <div className={styles.fieldGroup}>
@@ -265,7 +266,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                 </div>
               }/>
 
-              <ExpandableMenu title={"Simulation Parameters"} nestedElement={
+              <ExpandableMenu title={"Simulation Parameters"} override={activeTab} nestedElement={
                 <div className={styles.grid}>
                   {/* Episodes */}
                   <div className={styles.fieldGroup}>

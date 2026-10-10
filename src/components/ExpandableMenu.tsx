@@ -1,4 +1,4 @@
-import { CSSProperties, JSX, useState } from 'react';
+import { CSSProperties, useEffect, JSX, useState } from 'react';
 
 import styles from '../App/App.module.css'
 
@@ -8,11 +8,16 @@ interface ExpandableMenuProps {
     classTitle?: string;
     style?: CSSProperties;
     startExpanded?: boolean;
+    override?: any;
     nestedElement: JSX.Element;
 }
 
-export function ExpandableMenu({title, className = styles.expandBtn, classTitle = styles.subTitle, style, startExpanded = true, nestedElement }: ExpandableMenuProps) {
+export function ExpandableMenu({title, className = styles.expandBtn, classTitle = styles.subTitle, style, startExpanded = true, override, nestedElement }: ExpandableMenuProps) {
     const [isExpanded, setIsExpanded] = useState<boolean>(startExpanded);
+
+    useEffect(() => {
+        setIsExpanded(true);
+    },[override])
 
     return (
         <div className={className} style={style}>
