@@ -196,3 +196,25 @@
 .welcome-card-item:hover {
   border-left: 3px solid var(--e-sapphire-600);
 }
+
+.active-market, .active-demand, .active-learning-sim {
+  display: none;
+}
+
+.market .active-market {
+  display: block;
+}
+
+.demand-parameters .active-demand {
+  display: block;
+}
+
+.learning-simulation .active-learning-sim {
+  display: block;
+}
+
+.show-all {
+  .active-market, .active-demand, .active-learning-sim {
+    display: block;
+  }
+}

@@ -197,10 +197,10 @@ export function WelcomeView({
     return (
         <>
             <ExpandableMenu
-                className={styles.welcomeCard}
+                className={`${styles.welcomeCard} ${activeTab}`}
                 title={"Executive Guide & Simulation Instructions"}
                 classTitle={"welcome-subtitle"}
-                style={{ maxWidth: "56rem", margin: "auto" }} //TODO: condition background on expanded
+                style={{ maxWidth: "56rem", margin: "auto" }}
                 startExpanded={true}
                 nestedElement={
                     <>
@@ -233,38 +233,34 @@ export function WelcomeView({
                         </div>
 
                         {/* Tab 1: Market & Cost Inputs */}
-                        {(activeTab === 'market' || activeTab === 'show-all') && (
+                        <div className='active-market'>
                             <MathJaxContext>
                                 <h3 className="welcome-section-heading">Market & Cost Inputs</h3>
                                 <CardGrid cards={marketCards}/>
                                 <DemandCardGrid cards={demandEquationCards}/>
                             </MathJaxContext>
-                        )}
+                        </div>
 
                         {/* Tab 2: Demand Parameters */}
-                        {(activeTab === 'demand-parameters' || activeTab === 'show-all') && (
-                            <div>
-                                <h3 className="welcome-section-heading">Demand Parameters</h3>
-                                <h4 className="welcome-section-subheading">Linear Demand</h4>
-                                <CardGrid cards={demandCards['linear']}/>
+                        <div className='active-demand'>
+                            <h3 className="welcome-section-heading">Demand Parameters</h3>
+                            <h4 className="welcome-section-subheading">Linear Demand</h4>
+                            <CardGrid cards={demandCards['linear']}/>
 
-                                <h4 className="welcome-section-subheading">Logit Demand</h4>
-                                <CardGrid cards={demandCards['logit']}/>
-                            </div>
-                        )}
+                            <h4 className="welcome-section-subheading">Logit Demand</h4>
+                            <CardGrid cards={demandCards['logit']}/>
+                        </div>
 
                         {/* Tab 3: Learning & Simulation Parameters */}
-                        {(activeTab === 'learning-simulation' || activeTab === 'show-all') && (
-                            <div>
-                                {/* Learning Parameters */}
-                                <h3 className="welcome-section-heading">Learning Parameters</h3>
-                                <CardGrid cards={learningCards}/>
+                        <div className='active-learning-sim'>
+                            {/* Learning Parameters */}
+                            <h3 className="welcome-section-heading">Learning Parameters</h3>
+                            <CardGrid cards={learningCards}/>
 
-                                {/* Simulation & Convergence Parameters */}
-                                <h3 className="welcome-section-heading">Simulation & Solver Parameters</h3>
-                                <CardGrid cards={simulationCards}/>
-                            </div>
-                        )}
+                            {/* Simulation & Convergence Parameters */}
+                            <h3 className="welcome-section-heading">Simulation & Solver Parameters</h3>
+                            <CardGrid cards={simulationCards}/>
+                        </div>
                     </>
                 }
             />
