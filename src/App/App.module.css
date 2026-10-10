@@ -219,6 +219,15 @@ body {
   align-items: center;
 }
 
+.boundsLabel {
+  margin-top: 10px;
+  transition: all 0.2s ease-in-out;
+
+  &.flag {
+    color: red;
+  }
+}
+
 .hint {
   font-size: 0.75rem;
   color: var(--text-muted);

@@ -81,7 +81,7 @@ export function LinearInputsForm({ inputs, updateDemandConfig, isRunning }: Dema
                 onBoundsViolation={triggerFlag}
                 isRunning={isRunning}
             />
-            <label className={styles.label} style={{marginTop:'10px', color: boundsFlag ? 'red' : 'unset'}}>
+            <label className={`${styles.label} ${styles.boundsLabel} ${boundsFlag && styles.flag}`}>
                 <span>Note that parameters are restricted to satisfy the assumption (<em>b &gt; d</em>) to reflect that own-price demand sensitivity should exceed cross-price sensitivity.</span>
             </label>
        </>
