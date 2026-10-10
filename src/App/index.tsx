@@ -4,7 +4,8 @@ import Controls from '../components/Controls/ControlsForm';
 import { BenchmarkResultsCard, SimulationResultsCard} from '../components/ResultsCard'
 import { TrajectoryChart } from '../components/TrajectoryChart';
 import { usePyodide } from '../hooks/usePyodide';
-import type { DemandInputs, DemandInputsMap, LinearDemandInputs, LogitDemandInputs, FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
+import { toPascalCase } from '../utils/stringUtils';
+import type { LinearDemandInputs, LogitDemandInputs, FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 import styles from './App.module.css';
 
 const DEFAULT_LINEAR_INPUTS: LinearDemandInputs = {
@@ -123,15 +124,16 @@ export default function App() {
   function getBenchmarksJS(market: MarketConfig<'linear'>): Array<FirmBenchmarkResults> {
     const a = market.demand_inputs.demand_intercept;
     const b = market.demand_inputs.demand_slope;
+    const d = market.demand_inputs.elasticity_ij;
     const c1 = market.marginal_cost_1;
     const c2 = market.marginal_cost_2;
 
     const priceBertrand = (ci: number, cj: number) => {
-      return (a / (2 + b)) + ((1 + b) * (2 * (1 + b) * ci + b * cj)/((2 + 3 * b) * (2 + b)));
+      return (2*a*b + a*d + 2*b**2*ci + b*cj*d)/(4*b**2 - d**2)
     }
 
     const priceMonopoly = (ci: number) => {
-      return (a + ci) / 2.0;
+      return (a + b*ci - ci*d)/(2*b - 2*d)
     }
 
     const pb1 = priceBertrand(c1, c2);
@@ -203,6 +205,7 @@ export default function App() {
                     <>
                       <TrajectoryChart
                         trajectory={results[0].trajectory}
+                        title={`Price Trajectory vs Economic Benchmarks - ${toPascalCase(payload.market.demand_type)} Demand`}
                         benchmarks={benchmarks ?? undefined}
                         dataKey1={"avg_price1"}
                         dataKey2={"avg_price2"}
