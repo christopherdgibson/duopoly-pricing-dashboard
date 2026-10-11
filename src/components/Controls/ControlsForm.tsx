@@ -6,6 +6,7 @@ import { LogitInputsForm } from './DemandForms/LogitInputsForm';
 import { CEDInputsForm } from './DemandForms/CEDInputsForm';
 import { roundNumber } from '../../utils/numberUtils';
 
+import '../WelcomeView/WelcomeView.css'
 import styles from '../../App/App.module.css';
 import type { ControlsBase, DemandInputs, DemandInputsMap, DemandTypeKey, NavTabKeys, SimulationPayload } from '../../types';
 
@@ -128,24 +129,24 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                     <option value={'ced'}>Constant Elasticity Demand</option>
                   </select>
                 </div>
-                <div className={styles.selectedDropdown}>
-                  {payload.market.demand_type === 'linear' && 
-                    <MathJax>
-                      {"\\(q_i = a - b\\cdot p_i + d\\cdot p_j\\)"}
-                    </MathJax>
-                  }
-                  {payload.market.demand_type === 'logit' && 
-                    <MathJax>
-                      {"\\(q_i = \\frac{e^{\\frac{v_i - \\alpha_ip_i}{\\mu}}}{1 + \\sum_{j=1}^{N}e^{\\frac{v_j - \\alpha_jp_j}{\\mu}}}  \\)"}
-                    </MathJax>
-                  }
-                  {payload.market.demand_type === 'ced' && 
-                    <MathJax>
-                      {"\\(q_i = A_i \\cdot p_i^{-\\epsilon} \\cdot p_j^{\\delta}  \\)"}
-                    </MathJax>
-                  }
+                  <div className={`${styles.selectedDropdown} ${payload.market.demand_type}`}>
+                    <div className={'selected-linear'}>
+                      <MathJax>
+                        {"\\(q_i = a - b\\cdot p_i + d\\cdot p_j\\)"}
+                      </MathJax>
+                    </div>
+                    <div className={'selected-logit'}>
+                      <MathJax>
+                        {"\\(q_i = \\frac{e^{\\frac{v_i - \\alpha_ip_i}{\\mu}}}{1 + \\sum_{j=1}^{N}e^{\\frac{v_j - \\alpha_jp_j}{\\mu}}}  \\)"}
+                      </MathJax>
+                    </div>
+                    <div className={'selected-ced'}>
+                      <MathJax>
+                        {"\\(q_i = A_i \\cdot p_i^{-\\epsilon} \\cdot p_j^{\\delta}  \\)"}
+                      </MathJax>
+                    </div>
+                  </div>
                 </div>
-              </div>
             }/>
 
             {/* Marginal Cost */}

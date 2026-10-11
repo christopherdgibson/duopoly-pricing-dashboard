@@ -221,3 +221,16 @@
  {
   display: block;
 }
+
+.selected-linear, .selected-logit, .selected-ced {
+  grid-row: 1;
+  grid-column: 1;
+  opacity: 0;
+}
+
+.linear .selected-linear,
+.logit .selected-logit,
+.ced .selected-ced {
+  opacity: 1
+}
+
