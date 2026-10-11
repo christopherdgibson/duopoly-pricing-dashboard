@@ -18,6 +18,13 @@
   --e-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+.welcome-card {
+  background: var(--brand-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
 .welcome-header {
   display: flex;
   justify-content: space-between;
@@ -197,11 +204,15 @@
   border-left: 3px solid var(--e-sapphire-600);
 }
 
-.active-market, .active-demand, .active-learning-sim {
+.active-market, .active-demand, .active-learning-sim,
+.active-market .active-costs,
+.welcome-card.demand-parameters .active-market {
   display: none;
 }
 
 .market .active-market,
+.market .active-market .active-costs,
+.demand-parameters .active-market,
 .demand-parameters .active-demand,
 .learning-simulation .active-learning-sim,
 .show-all .active-market,

@@ -1,12 +1,13 @@
-export type DemandTypeKey = 'linear' | 'logit';
+export type DemandTypeKey = 'linear' | 'logit' | 'ced';
 
 export type NavTabKeys =  | 'market' | 'demand-parameters' | 'learning-simulation' | 'show-all';
 
-export type DemandInputs = LinearDemandInputs | LogitDemandInputs;
+export type DemandInputs = LinearDemandInputs | LogitDemandInputs | CEDInputs;
 
 export interface DemandInputsMap {
   linear: LinearDemandInputs;
   logit: LogitDemandInputs;
+  ced: CEDInputs;
 }
 
 // A generic MarketConfig enforcing the matching demand input
@@ -36,6 +37,14 @@ export interface LogitDemandInputs {
   logit_scale: number;
   outside_utility?: number;
   nesting_parameter?: number; // Optional nested logit param
+}
+
+export interface CEDInputs {
+  type: 'ced';
+  A1: number;
+  A2: number;
+  epsilon: number;
+  delta: number;
 }
 
 export interface RunConfig {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { MathJax } from 'better-react-mathjax';
+import { roundNumber } from '../../../utils/numberUtils';
 import styles from '../../../App/App.module.css';``
 import type { ControlCardProps, InputProps } from '../../../types';
 
@@ -19,8 +20,8 @@ export function ControlCard<T,>({card, inputKey, value, updateDemandConfig, onBo
             if (isNaN(numVal)) return;
 
             // Check if bounds are violated
-            const violatesMin = card.min !== undefined && numVal < card.min;
-            const violatesMax = card.max !== undefined && numVal > card.max;
+            const violatesMin = card.min !== undefined && numVal < roundNumber(card.min, 1);
+            const violatesMax = card.max !== undefined && numVal > roundNumber(card.max, 1);
 
             if (violatesMin || violatesMax) {
                 // If it's an arrow click or a finalized number out of bounds, trigger flag

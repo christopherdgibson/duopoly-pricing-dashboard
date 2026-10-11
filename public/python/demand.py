@@ -17,6 +17,13 @@ class LogitDemandInputs:
     outside_utility: float = 0.0  # Default v0 = 0 -> exp(v0) = 1.0
 
 @dataclass(frozen=True)
+class CEDInputs:
+    A1: float
+    A2: float
+    epsilon: float
+    delta: float
+
+@dataclass(frozen=True)
 class LogitResults:
     converged: bool
     prices: Tuple[float, float]
@@ -253,16 +260,118 @@ class LogitDemand:
 
         raise TimeoutError("Monopoly solver failed to converge.")
 
+class ConstantElasticityDemand:
+    def __init__(self, inputs: CEDInputs):
+        """
+        Constant Elasticity (Log-Log) Demand Model
+        
+        Parameters:
+        - A1, A2: Demand scale parameters (must be > 0)
+        - epsilon: Own-price elasticity (must be > 1 for finite profits)
+        - delta: Cross-price elasticity (must satisfy 0 <= delta < epsilon)
+        """
+        self.A1 = inputs.A1
+        self.A2 = inputs.A2
+        self.epsilon = inputs.epsilon
+        self.delta = inputs.delta
+        
+        if inputs.epsilon <= 1.0:
+            raise ValueError("Own-price elasticity epsilon must be strictly greater than 1.")
+        if inputs.delta < 0 or inputs.delta >= inputs.epsilon:
+            raise ValueError("Cross-price elasticity delta must be non-negative and less than epsilon.")
+
+    def get_demand(self, p1: float, p2: float) -> Tuple[float, float]:
+        """Calculates log-log demand quantities for given prices."""
+        q1 = self.A1 * (p1 ** (-self.epsilon)) * (p2 ** self.delta)
+        q2 = self.A2 * (p2 ** (-self.epsilon)) * (p1 ** self.delta)
+        return q1, q2
+
+    def bertrand_prices(self, c1: float, c2: float) -> Tuple[float, float]:
+        """
+        Calculates non-cooperative Bertrand-Nash prices.
+        Under Constant Elasticity demand, the cross-price term factors out, 
+        yielding the clean constant-markup rule: p_i = (epsilon / (epsilon - 1)) * c_i
+        """
+        if c1 <= 0 or c2 <= 0:
+            return (np.nan, np.nan)
+        
+        p1 = (self.epsilon / (self.epsilon - 1.0)) * c1
+        p2 = (self.epsilon / (self.epsilon - 1.0)) * c2
+        return float(p1), float(p2)
+
+    def monopoly_prices(self, c1: float, c2: float, max_iter: int = 100, tol: float = 1e-8) -> Tuple[float, float]:
+        """
+        Calculates joint monopoly prices using a multi-dimensional Newton-Raphson 
+        root-finding algorithm on the coupled First-Order Conditions.
+        """
+        # Initialize starting guess using Bertrand prices
+        p1, p2 = self.bertrand_prices(c1, c2)
+        if np.isnan(p1) or np.isnan(p2):
+            p1, p2 = c1 * 1.5, c2 * 1.5
+
+        for _ in range(max_iter):
+            # Guard against prices dropping to or below marginal cost during iterations
+            if p1 <= c1 or p2 <= c2:
+                p1 = max(p1, c1 + 1e-3)
+                p2 = max(p2, c2 + 1e-3)
+
+            q1, q2 = self.get_demand(p1, p2)
+
+            # Monopoly First-Order Condition residuals
+            # FOC 1: q1 + (p1 - c1)*(dq1/dp1) + (p2 - c2)*(dq2/dp1) = 0
+            f1 = q1 - self.epsilon * (p1 - c1) * (q1 / p1) + self.delta * (p2 - c2) * (q2 / p1)
+            f2 = q2 - self.epsilon * (p2 - c2) * (q2 / p2) + self.delta * (p1 - c1) * (q1 / p2)
+
+            F = np.array([f1, f2], dtype=float)
+            if np.linalg.norm(F) < tol:
+                return float(p1), float(p2)
+
+            # Numerical Jacobian approximation using finite differences
+            h = 1e-5
+            J = np.zeros((2, 2), dtype=float)
+
+            # Perturb p1
+            q1_h1, q2_h1 = self.get_demand(p1 + h, p2)
+            f1_h1 = q1_h1 - self.epsilon * ((p1 + h) - c1) * (q1_h1 / (p1 + h)) + self.delta * (p2 - c2) * (q2_h1 / (p1 + h))
+            f2_h1 = q2_h1 - self.epsilon * (p2 - c2) * (q2_h1 / p2) + self.delta * ((p1 + h) - c1) * (q1_h1 / p2)
+            
+            J[0, 0] = (f1_h1 - f1) / h
+            J[1, 0] = (f2_h1 - f2) / h
+
+            # Perturb p2
+            q1_h2, q2_h2 = self.get_demand(p1, p2 + h)
+            f1_h2 = q1_h2 - self.epsilon * (p1 - c1) * (q1_h2 / p1) + self.delta * ((p2 + h) - c2) * (q2_h2 / p1)
+            f2_h2 = q2_h2 - self.epsilon * ((p2 + h) - c2) * (q2_h2 / (p2 + h)) + self.delta * (p1 - c1) * (q1_h2 / (p2 + h))
+
+            J[0, 1] = (f1_h2 - f1) / h
+            J[1, 1] = (f2_h2 - f2) / h
+
+            try:
+                delta_p = np.linalg.solve(J, -F)
+            except np.linalg.LinAlgError:
+                return (np.nan, np.nan)
+
+            p1 += delta_p[0]
+            p2 += delta_p[1]
+
+            if p1 <= 0 or p2 <= 0:
+                return (np.nan, np.nan)
+
+        return (np.nan, np.nan)
+    
+
 if __name__ == "__main__":
-    demand = LogitDemand(LogitDemandInputs(1, 1, 0.1, 0.1))
+    # demand = LogitDemand(LogitDemandInputs(1, 1, 0.1, 0.1))
+    demand = ConstantElasticityDemand(CEDInputs(1, 1, 5, 2))
 
 
     pb = demand.bertrand_prices(1, 1)
 
     pm = demand.monopoly_prices(1, 1)
 
-    pb_result = demand.solve_logit_bertrand(1, 1)
+    # pb_result = demand.solve_logit_bertrand(1, 1)
+    # print('results', pb_result)
+
     print('demand:', demand)
-    print('results', pb_result)
     print('bertrand', pb)
     print('monopoly', pm)

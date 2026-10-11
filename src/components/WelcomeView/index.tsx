@@ -24,7 +24,7 @@ export interface WelcomeViewProps {
 const MARKET_COST_CARDS: QuickstartCardItem[] = [
     {
         title: "Demand Model Selection",
-        badge: "Linear / Logit",
+        badge: "Linear / Logit / CED",
         description: "Toggle between Linear demand (direct cross-price elasticity) and Multinomial Logit (discrete choice utility with outside options)."
     },
     {
@@ -48,6 +48,15 @@ const DEMAND_EQUATION_CARDS: QuickstartCardItem[] = [
                 Market shares are computed via softmax normalization against an outside option <MathJax inline>{"\\(v_0  \\)"}</MathJax>.
             </>,
         latexText: "q_i = \\frac{e^{(v_i - \\alpha_i\\cdot p_i)/\\mu}}{e^{v_0/\\mu} + \\sum_{j=1}^{N}e^{(v_i - \\alpha_i\\cdot p_i)/\\mu}}"
+    },
+    {
+        title: "Constant Elasticity Demand (CED)",
+        badge: "Logit",
+        description:
+            <>
+                Non-cooperative Bertrand markup depends strictly on own-price elasticity &epsilon; and marginal cost, remaining independent of cross-price substitution &delta;.
+            </>,
+        latexText: "q_i = A_i \\cdot p_i^{-\\epsilon} \\cdot p_j^{\\delta}"
     },
 ];
 
@@ -92,9 +101,28 @@ const LOGIT_DEMAND_CARDS: QuickstartCardItem[] = [
     }
 ];
 
+const CED_DEMAND_CARDS: QuickstartCardItem[] = [
+    {
+        title: "Baseline Demand Scale",
+        badge: "A1, A2",
+        description: "Scale parameters determining market volume for Firm 1 and Firm 2 when prices equal 1."
+    },
+    {
+        title: "Own-Price Elasticity",
+        badge: "epsilon (ε)",
+        description: "Percentage drop in demand per 1% price increase (must be > 1). Sets the Bertrand competitive markup."
+    },
+    {
+        title: "Cross-Price Elasticity",
+        badge: "delta (δ)",
+        description: "Percentage demand gain when rival raises price by 1% (must be < ε). Measures inter-firm substitutability."
+    }
+];
+
 const DEMAND_CARDS: Record<DemandTypeKey, QuickstartCardItem[]> = {
     linear: LINEAR_DEMAND_CARDS,
-    logit: LOGIT_DEMAND_CARDS
+    logit: LOGIT_DEMAND_CARDS,
+    ced: CED_DEMAND_CARDS
 }
 
 const LEARNING_CARDS: QuickstartCardItem[] = [
@@ -197,7 +225,7 @@ export function WelcomeView({
     return (
         <>
             <ExpandableMenu
-                className={`${styles.welcomeCard} ${activeTab}`}
+                className={`welcome-card ${activeTab}`}
                 title={"Executive Guide & Simulation Instructions"}
                 classTitle={"welcome-subtitle"}
                 style={{ maxWidth: "56rem", margin: "auto" }}
@@ -247,6 +275,9 @@ export function WelcomeView({
 
                             <h4 className="welcome-section-subheading">Logit Demand</h4>
                             <CardGrid cards={demandCards['logit']}/>
+
+                            <h4 className="welcome-section-subheading">Constant Elasticity Demand</h4>
+                            <CardGrid cards={demandCards['ced']}/>
                         </div>
 
                         {/* Tab 3: Learning & Simulation Parameters */}

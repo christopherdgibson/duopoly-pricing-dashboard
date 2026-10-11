@@ -3,6 +3,7 @@ import { MathJax } from 'better-react-mathjax';
 import { ExpandableMenu } from '../../components/ExpandableMenu'
 import { LinearInputsForm } from './DemandForms/LinearInputsForm';
 import { LogitInputsForm } from './DemandForms/LogitInputsForm';
+import { CEDInputsForm } from './DemandForms/CEDInputsForm';
 import { roundNumber } from '../../utils/numberUtils';
 
 import styles from '../../App/App.module.css';
@@ -11,7 +12,7 @@ import type { ControlsBase, DemandInputs, DemandInputsMap, DemandTypeKey, NavTab
 export interface ControlsProps extends ControlsBase {
   payload: SimulationPayload;
   onChange: (updatedParams: SimulationPayload) => void;
-  handleModelTypeChange: (newModel: "linear" | "logit") => void
+  handleModelTypeChange: (newModel: DemandTypeKey) => void
   onRunSimulation: () => void;
 }
 
@@ -124,6 +125,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                   >
                     <option value={'linear'}>Linear Demand</option>
                     <option value={'logit'}>Logit Demand</option>
+                    <option value={'ced'}>Constant Elasticity Demand</option>
                   </select>
                 </div>
                 <div className={styles.selectedDropdown}>
@@ -137,12 +139,17 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
                       {"\\(q_i = \\frac{e^{\\frac{v_i - \\alpha_ip_i}{\\mu}}}{1 + \\sum_{j=1}^{N}e^{\\frac{v_j - \\alpha_jp_j}{\\mu}}}  \\)"}
                     </MathJax>
                   }
+                  {payload.market.demand_type === 'ced' && 
+                    <MathJax>
+                      {"\\(q_i = A_i \\cdot p_i^{-\\epsilon} \\cdot p_j^{\\delta}  \\)"}
+                    </MathJax>
+                  }
                 </div>
               </div>
             }/>
 
             {/* Marginal Cost */}
-            <ExpandableMenu title={"Cost Parameters"} override={activeTab} nestedElement={
+            <ExpandableMenu className={`${styles.expandBtn} active-costs`} title={"Cost Parameters"} override={activeTab} nestedElement={
               <div className={styles.flexGrid}>        
                 <div className={`${styles.fieldGroup} ${styles.flexGroup}`}>
                   <label className={styles.label}>
@@ -196,6 +203,7 @@ export default function Controls({payload, handleModelTypeChange, onChange, onRu
             <>
               {demandInputs && demandInputs.type=='linear' && <LinearInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue, maxValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue, maxValue)} isRunning={isRunning} />}
               {demandInputs && demandInputs.type=='logit' && <LogitInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue)} isRunning={isRunning} />}
+              {demandInputs && demandInputs.type=='ced' && <CEDInputsForm inputs={demandInputs} updateDemandConfig={(field, value, minValue, maxValue) => handleDemandChange(field as keyof typeof payload.market.demand_inputs, value, minValue, maxValue)} isRunning={isRunning} />}
             </>
           }/>
 

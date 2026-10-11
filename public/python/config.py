@@ -1,7 +1,7 @@
 from dataclasses import dataclass, fields
 from typing import Union, Concatenate, Dict, Any
 
-from demand import IDemandModel, LinearDemand, LogitDemand, LinearDemandInputs, LogitDemandInputs
+from demand import IDemandModel, ConstantElasticityDemand, LinearDemand, LogitDemand, CEDInputs, LinearDemandInputs, LogitDemandInputs
 
 # class DemandInputs: Union[LinearDemandInputs(), LogitDemandInputs()]
 
@@ -45,6 +45,11 @@ class MarketParams:
             # Filter and unpack kwargs safely into LogitDemandInputs
             inputs = instantiate_from_dict(LogitDemandInputs, inputs_dict)
             model = LogitDemand(inputs)
+
+        elif demand_type == "ced":
+            # Filter and unpack kwargs safely into CEDInputs
+            inputs = instantiate_from_dict(CEDInputs, inputs_dict)
+            model = ConstantElasticityDemand(inputs)
 
         else:
             raise ValueError(f"Unsupported demand model type: '{demand_type}'")

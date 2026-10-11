@@ -5,7 +5,7 @@ import { BenchmarkResultsCard, SimulationResultsCard} from '../components/Result
 import { TrajectoryChart } from '../components/TrajectoryChart';
 import { usePyodide } from '../hooks/usePyodide';
 import { toPascalCase } from '../utils/stringUtils';
-import type { LinearDemandInputs, LogitDemandInputs, FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
+import type { CEDInputs, DemandTypeKey, LinearDemandInputs, LogitDemandInputs, FirmBenchmarkResults, MarketConfig, RunConfig, SimulationPayload, SimulationResults } from '../types';
 import styles from './App.module.css';
 
 const DEFAULT_LINEAR_INPUTS: LinearDemandInputs = {
@@ -22,6 +22,14 @@ const DEFAULT_LOGIT_INPUTS: LogitDemandInputs = {
   price_sensitivity: 1,
   logit_scale: 2,
   outside_utility: 0
+};
+
+const DEFAULT_CED_INPUTS: CEDInputs = {
+  type: 'ced',
+  A1: 100,
+  A2: 100,
+  epsilon: 2,
+  delta: 0.5
 };
 
 const DEFAULT_MARKET_CONFIG: MarketConfig = {
@@ -99,7 +107,7 @@ export default function App() {
     }
   };
 
-  const handleModelTypeChange = (newModel: 'linear' | 'logit') => {
+  const handleModelTypeChange = (newModel: DemandTypeKey) => {
     if (newModel === 'linear') {
       setPayload({
         ...payload,
@@ -109,13 +117,22 @@ export default function App() {
           demand_inputs: DEFAULT_LINEAR_INPUTS,
         },
       });
-    } else {
+    } else if (newModel === 'logit') {
       setPayload({
         ...payload,
         market: {
           ...payload.market,
           demand_type: 'logit',
           demand_inputs: DEFAULT_LOGIT_INPUTS,
+        },
+      });
+    } else {
+      setPayload({
+        ...payload,
+        market: {
+          ...payload.market,
+          demand_type: 'ced',
+          demand_inputs: DEFAULT_CED_INPUTS,
         },
       });
     }

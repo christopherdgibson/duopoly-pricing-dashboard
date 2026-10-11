@@ -14,7 +14,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <StrictMode>
     <MathJaxContext
-      version={3} 
+      version={4} 
       config={{}} 
       hideUntilTypeset="first"
     >
