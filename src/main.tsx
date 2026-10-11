@@ -1,5 +1,6 @@
 import {StrictMode} from 'react';
 import ReactDOM from 'react-dom/client';
+import { MathJaxContext } from 'better-react-mathjax';
 import App from './App';
 
 const rootElement = document.getElementById('root');
@@ -12,6 +13,12 @@ const root = ReactDOM.createRoot(rootElement);
 
 root.render(
   <StrictMode>
-    <App />
+    <MathJaxContext
+      version={3} 
+      config={{}} 
+      hideUntilTypeset="first"
+    >
+      <App />
+    </MathJaxContext>
   </StrictMode>
 );

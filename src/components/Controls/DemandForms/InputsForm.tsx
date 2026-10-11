@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MathJax, MathJaxContext } from 'better-react-mathjax';
+import { MathJax } from 'better-react-mathjax';
 import styles from '../../../App/App.module.css';``
 import type { ControlCardProps, InputProps } from '../../../types';
 
@@ -68,30 +68,28 @@ export function InputsForm<T extends Record<string, any>>({
   isRunning
 }: InputProps<T>) {
     return (
-        <MathJaxContext>
-            <div className={styles.grid}>
-                {inputKeys.map((inputKey) => {
-                    const card = cards[inputKey];
-                    const rawValue = inputs[inputKey];
+        <div className={styles.grid}>
+            {inputKeys.map((inputKey) => {
+                const card = cards[inputKey];
+                const rawValue = inputs[inputKey];
 
-                    if (!card || typeof rawValue !== 'number') {
-                        return null;
-                    }
+                if (!card || typeof rawValue !== 'number') {
+                    return null;
+                }
 
-                    return (
-                        <div key={String(inputKey)} className={styles.fieldGroup}>
-                            <ControlCard
-                                card={card}
-                                inputKey={inputKey}
-                                value={rawValue}
-                                updateDemandConfig={updateDemandConfig}
-                                onBoundsViolation={onBoundsViolation}
-                                isRunning={isRunning}
-                            />
-                        </div>
-                    );
-                })}
-            </div>
-        </MathJaxContext>
+                return (
+                    <div key={String(inputKey)} className={styles.fieldGroup}>
+                        <ControlCard
+                            card={card}
+                            inputKey={inputKey}
+                            value={rawValue}
+                            updateDemandConfig={updateDemandConfig}
+                            onBoundsViolation={onBoundsViolation}
+                            isRunning={isRunning}
+                        />
+                    </div>
+                );
+            })}
+        </div>
     );
 }

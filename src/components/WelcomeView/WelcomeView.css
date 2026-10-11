@@ -201,20 +201,12 @@
   display: none;
 }
 
-.market .active-market {
+.market .active-market,
+.demand-parameters .active-demand,
+.learning-simulation .active-learning-sim,
+.show-all .active-market,
+.show-all .active-demand,
+.show-all .active-learning-sim
+ {
   display: block;
-}
-
-.demand-parameters .active-demand {
-  display: block;
-}
-
-.learning-simulation .active-learning-sim {
-  display: block;
-}
-
-.show-all {
-  .active-market, .active-demand, .active-learning-sim {
-    display: block;
-  }
 }

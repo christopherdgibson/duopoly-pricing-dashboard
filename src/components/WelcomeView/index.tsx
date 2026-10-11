@@ -1,5 +1,5 @@
 import { ReactElement, useState } from 'react';
-import { MathJax, MathJaxContext } from 'better-react-mathjax';
+import { MathJax } from 'better-react-mathjax';
 import { ExpandableMenu } from "../ExpandableMenu";
 import type { DemandTypeKey, NavTabKeys } from "../../types";
 
@@ -234,11 +234,9 @@ export function WelcomeView({
 
                         {/* Tab 1: Market & Cost Inputs */}
                         <div className='active-market'>
-                            <MathJaxContext>
-                                <h3 className="welcome-section-heading">Market & Cost Inputs</h3>
-                                <CardGrid cards={marketCards}/>
-                                <DemandCardGrid cards={demandEquationCards}/>
-                            </MathJaxContext>
+                            <h3 className="welcome-section-heading">Market & Cost Inputs</h3>
+                            <CardGrid cards={marketCards}/>
+                            <DemandCardGrid cards={demandEquationCards}/>
                         </div>
 
                         {/* Tab 2: Demand Parameters */}
