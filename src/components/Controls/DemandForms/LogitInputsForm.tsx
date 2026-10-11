@@ -1,4 +1,5 @@
 import { InputsForm } from './InputsForm';
+import { roundNumber } from "../../../utils/numberUtils";
 import type { CardInputs, DemandProps, LogitDemandInputs } from '../../../types';
 
 type LogitControlKeys = Exclude<keyof LogitDemandInputs, 'type' | 'outside_utility' |'nesting_parameter'>
@@ -39,12 +40,28 @@ const LOGIT_CARDS: Record<LogitControlKeys, CardInputs> = {
 };
 
 export function LogitInputsForm({ inputs, updateDemandConfig, isRunning }: DemandProps<LogitDemandInputs>) {
+
+  const checkBoundsViolation = (field: LogitControlKeys, value: number): boolean => {
+      const card = LOGIT_CARDS[field];
+
+      if (card.min !== undefined && roundNumber(value, 1) < roundNumber(card.min, 1)) {
+          return true;
+      }
+
+      if (card.max !== undefined && roundNumber(value, 1) > roundNumber(card.max, 1)) {
+          return true;
+      }
+
+      return false;
+  };
+
   return (
     <InputsForm<Omit<LogitDemandInputs, 'type' | 'outside_utility' | 'nesting_parameter'>>
       inputKeys={LOGIT_KEYS}
       cards={LOGIT_CARDS}
       inputs={inputs}
       updateDemandConfig={updateDemandConfig}
+      checkBoundsViolation={checkBoundsViolation}
       isRunning={isRunning}
     />
   );
