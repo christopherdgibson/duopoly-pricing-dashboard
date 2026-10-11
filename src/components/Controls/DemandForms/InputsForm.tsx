@@ -1,37 +1,81 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MathJax } from 'better-react-mathjax';
+import { roundNumber } from "../../../utils/numberUtils";
 import styles from '../../../App/App.module.css';``
-import type { ControlCardProps, InputProps } from '../../../types';
+import type { CardInputs, ControlsBase, DemandProps, DemandTypeKey } from '../../../types';
 
-export function ControlCard<T,>({card, inputKey, value, updateDemandConfig, checkBoundsViolation, isRunning}: ControlCardProps<T>) {
-      const [localValue, setLocalValue] = useState<string>(String(value));
 
-        // Sync local state if parent value changes externally
-        useEffect(() => {
-            setLocalValue(String(value));
-        }, [value]);
+interface InputProps<T extends Record<string, any>> extends DemandProps<T> {
+  inputKeys: Array<Extract<keyof T, string>>;
+  cards: Record<Extract<keyof T, string>, CardInputs>;
+  boundsCallbacks?: {minCallback: (field: keyof T) => boolean, maxCallback: (field: keyof T) => boolean};
+  boundsHintEl?: any;
+}
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const rawText = e.target.value;
-            setLocalValue(rawText);
+interface ControlCardProps<T> extends ControlsBase {
+  inputKey: T;
+  value: number | DemandTypeKey | undefined;
+  card: CardInputs;
+  updateDemandConfig: (field: T, value: number, minValue?: number, maxValue?: number) => void;
+  boundsCallbacks?: {minCallback: (field: T) => boolean, maxCallback: (field: T) => boolean};
+  triggerFlag: () => void;
+}
 
-            const numVal = parseFloat(rawText);
-            if (isNaN(numVal)) return;
+interface BoundsViolationProps<T> {
+    card: CardInputs;
+    field: T;
+    value: number;
+    boundsCallbacks?: {minCallback?: (field: T) => boolean, maxCallback?: (field: T) => boolean};
+    triggerFlag?: () => void;
+}
 
-            if (checkBoundsViolation && checkBoundsViolation(inputKey, numVal)) {
-                setLocalValue(String(value)); // Revert input display to safe value
-            } else {
-                updateDemandConfig(inputKey, numVal); // Valid input, update parent state normally
-            }
-        };
+function checkBoundsViolation<T>({card, field, value, boundsCallbacks, triggerFlag}: BoundsViolationProps<T>): boolean {
+    if (card.min !== undefined && roundNumber(value, 1) < roundNumber(card.min, 1)) {
+        if (boundsCallbacks && boundsCallbacks.minCallback && boundsCallbacks.minCallback(field) == true&& triggerFlag) {
+            triggerFlag();
+        }
+        return true;
+    }
 
-        const handleBlur = () => {
-            const numVal = parseFloat(localValue);
-            // On blur, if out of bounds, snap it back to the last valid value
-            if (isNaN(numVal) || (card.min !== undefined && numVal < card.min) || (card.max !== undefined && numVal > card.max)) {
-            setLocalValue(String(value));
-            }
-        };
+    if (card.max !== undefined && roundNumber(value, 1) > roundNumber(card.max, 1)) {
+        if (boundsCallbacks && boundsCallbacks.maxCallback && boundsCallbacks.maxCallback(field) == true && triggerFlag) {
+            triggerFlag();
+        }
+        return true;
+    }
+
+    return false;
+};
+
+function ControlCard<T,>({card, inputKey, value, updateDemandConfig, boundsCallbacks, triggerFlag, isRunning}: ControlCardProps<T>) {
+    const [localValue, setLocalValue] = useState<string>(String(value));
+
+    // Sync local state if parent value changes externally
+    useEffect(() => {
+        setLocalValue(String(value));
+    }, [value]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawText = e.target.value;
+        setLocalValue(rawText);
+
+        const numVal = parseFloat(rawText);
+        if (isNaN(numVal)) return;
+
+        if (checkBoundsViolation({card, field: inputKey, value: numVal, boundsCallbacks, triggerFlag}) === true) {
+            setLocalValue(String(value)); // Revert input display to safe value
+        } else {
+            updateDemandConfig(inputKey, numVal); // Valid input, update parent state normally
+        }
+    };
+
+    const handleBlur = () => {
+        const numVal = parseFloat(localValue);
+        // On blur, if out of bounds, snap it back to the last valid value
+        if (isNaN(numVal) || (card.min !== undefined && numVal < card.min) || (card.max !== undefined && numVal > card.max)) {
+        setLocalValue(String(value));
+        }
+    };
 
     return (
         <>
@@ -57,32 +101,60 @@ export function InputsForm<T extends Record<string, any>>({
   cards,
   inputs,
   updateDemandConfig,
-  checkBoundsViolation,
+  boundsCallbacks,
+  boundsHintEl,
   isRunning
 }: InputProps<T>) {
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
+    const [boundsFlag, setBoundsFlag] = useState<boolean>(false);
+
+    const triggerFlag = () => {
+        // Clear any existing active timer immediately
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+
+        setBoundsFlag(true);
+
+        timeoutRef.current = setTimeout(() => {
+            setBoundsFlag(false);
+            timeoutRef.current = null;
+        }, 3000);
+    };
+
     return (
-        <div className={styles.grid}>
-            {inputKeys.map((inputKey) => {
-                const card = cards[inputKey];
-                const rawValue = inputs[inputKey];
+        <>
+            <div className={styles.grid}>
+                {inputKeys.map((inputKey) => {
+                    const card = cards[inputKey];
+                    const rawValue = inputs[inputKey];
 
-                if (!card || typeof rawValue !== 'number') {
-                    return null;
-                }
+                    if (!card || typeof rawValue !== 'number') {
+                        return null;
+                    }
 
-                return (
-                    <div key={String(inputKey)} className={styles.fieldGroup}>
-                        <ControlCard
-                            card={card}
-                            inputKey={inputKey}
-                            value={rawValue}
-                            updateDemandConfig={updateDemandConfig}
-                            checkBoundsViolation={checkBoundsViolation}
-                            isRunning={isRunning}
-                        />
-                    </div>
-                );
-            })}
-        </div>
+                    return (
+                        <div key={String(inputKey)} className={styles.fieldGroup}>
+                            <ControlCard
+                                card={card}
+                                inputKey={inputKey}
+                                value={rawValue}
+                                updateDemandConfig={updateDemandConfig}
+                                boundsCallbacks={boundsCallbacks}
+                                triggerFlag={triggerFlag}
+                                isRunning={isRunning}
+                            />
+                        </div>
+                    );
+                })}
+            </div>
+            {boundsHintEl !== undefined && (
+                <label className={`${styles.label} ${styles.boundsLabel} ${boundsFlag && styles.flag}`}>
+                    {boundsHintEl}
+                </label>
+            )}
+        </>
     );
 }
