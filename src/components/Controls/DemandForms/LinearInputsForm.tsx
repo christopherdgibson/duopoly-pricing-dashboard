@@ -1,6 +1,7 @@
 
 import { useRef, useState } from 'react';
 import { InputsForm } from './InputsForm';
+import { roundNumber } from "../../../utils/numberUtils";
 import type { CardInputs, DemandProps, LinearDemandInputs } from '../../../types';
 
 import styles from '../../../App/App.module.css';
@@ -39,14 +40,28 @@ export function LinearInputsForm({ inputs, updateDemandConfig, isRunning }: Dema
         }
     };
 
-    const triggerFlag = (field: keyof LinearDemandInputs) => {
+    const checkBoundsViolation = (field: LinearControlKeys, value: number): boolean => {
+            const card = cards[field];
+    
+            if (card.min !== undefined && roundNumber(value, 1) < roundNumber(card.min, 1)) {
+                if (field === 'demand_slope') triggerFlag();
+                return true;
+            }
+    
+            if (card.max !== undefined && roundNumber(value, 1) > roundNumber(card.max, 1)) {
+                if (field === 'elasticity_ij') triggerFlag();
+                return true;
+            }
+    
+            return false;
+        };
+
+    const triggerFlag = () => {
         // Clear any existing active timer immediately
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
             timeoutRef.current = null;
         }
-
-        if (field === 'demand_intercept') return;
 
         setBoundsFlag(true);
 
@@ -56,21 +71,6 @@ export function LinearInputsForm({ inputs, updateDemandConfig, isRunning }: Dema
         }, 3000);
     };
 
-    // const filteredDemandChange = <F extends keyof DemandInputsMap['linear']>(
-    //     field: F,
-    //     value: number,
-    //     minValue?: number,
-    //     maxValue?: number
-    //   ) => {
-    //     console.log('filteredDemandChange', 'value: ', value, 'minValue: ', minValue, 'maxValue: ', maxValue);
-    //     if ((minValue && value < minValue) || (maxValue && value > maxValue)) {
-    //         if (field === 'demand_intercept') return;
-    //         triggerFlag(field);
-    //     } else {
-    //         updateDemandConfig(field as keyof LinearDemandInputs, value, minValue);
-    //     }
-    // }
-
     return (
         <>
             <InputsForm<Omit<LinearDemandInputs, 'type'>>
@@ -78,7 +78,7 @@ export function LinearInputsForm({ inputs, updateDemandConfig, isRunning }: Dema
                 cards={cards}
                 inputs={inputs}
                 updateDemandConfig={updateDemandConfig}
-                onBoundsViolation={triggerFlag}
+                checkBoundsViolation={checkBoundsViolation}
                 isRunning={isRunning}
             />
             <label className={`${styles.label} ${styles.boundsLabel} ${boundsFlag && styles.flag}`}>

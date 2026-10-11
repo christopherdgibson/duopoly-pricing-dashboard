@@ -77,7 +77,7 @@ export interface ControlCardProps<T> extends ControlsBase {
   value: number | DemandTypeKey | undefined;
   card: CardInputs;
   updateDemandConfig: (field: T, value: number, minValue?: number, maxValue?: number) => void;
-  onBoundsViolation?: (field: any) => void;
+  checkBoundsViolation?: (field: any, value: number) => void;
 }
 
 export interface DemandProps<T> extends ControlsBase {
@@ -88,7 +88,7 @@ export interface DemandProps<T> extends ControlsBase {
 export interface InputProps<T extends Record<string, any>> extends DemandProps<T> {
   inputKeys: Array<Extract<keyof T, string>>;
   cards: Record<Extract<keyof T, string>, CardInputs>;
-  onBoundsViolation?: (field: any) => void;
+  checkBoundsViolation?: (field: any, value: number) => void;
 }
 
 export interface TrajectoryProps {

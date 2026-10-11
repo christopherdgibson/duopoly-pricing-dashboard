@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { MathJax } from 'better-react-mathjax';
-import { roundNumber } from '../../../utils/numberUtils';
 import styles from '../../../App/App.module.css';``
 import type { ControlCardProps, InputProps } from '../../../types';
 
-export function ControlCard<T,>({card, inputKey, value, updateDemandConfig, onBoundsViolation, isRunning}: ControlCardProps<T>) {
+export function ControlCard<T,>({card, inputKey, value, updateDemandConfig, checkBoundsViolation, isRunning}: ControlCardProps<T>) {
       const [localValue, setLocalValue] = useState<string>(String(value));
 
         // Sync local state if parent value changes externally
@@ -19,23 +18,16 @@ export function ControlCard<T,>({card, inputKey, value, updateDemandConfig, onBo
             const numVal = parseFloat(rawText);
             if (isNaN(numVal)) return;
 
-            // Check if bounds are violated
-            const violatesMin = card.min !== undefined && numVal < roundNumber(card.min, 1);
-            const violatesMax = card.max !== undefined && numVal > roundNumber(card.max, 1);
-
-            if (violatesMin || violatesMax) {
-                // If it's an arrow click or a finalized number out of bounds, trigger flag
-                if (onBoundsViolation) onBoundsViolation(inputKey);
+            if (checkBoundsViolation && checkBoundsViolation(inputKey, numVal)) {
                 setLocalValue(String(value)); // Revert input display to safe value
             } else {
-                // Valid input, update parent state normally
-                updateDemandConfig(inputKey, numVal);
+                updateDemandConfig(inputKey, numVal); // Valid input, update parent state normally
             }
         };
 
         const handleBlur = () => {
             const numVal = parseFloat(localValue);
-            // On blur, if they left it out of bounds, snap it back to the last valid value
+            // On blur, if out of bounds, snap it back to the last valid value
             if (isNaN(numVal) || (card.min !== undefined && numVal < card.min) || (card.max !== undefined && numVal > card.max)) {
             setLocalValue(String(value));
             }
@@ -65,7 +57,7 @@ export function InputsForm<T extends Record<string, any>>({
   cards,
   inputs,
   updateDemandConfig,
-  onBoundsViolation,
+  checkBoundsViolation,
   isRunning
 }: InputProps<T>) {
     return (
@@ -85,7 +77,7 @@ export function InputsForm<T extends Record<string, any>>({
                             inputKey={inputKey}
                             value={rawValue}
                             updateDemandConfig={updateDemandConfig}
-                            onBoundsViolation={onBoundsViolation}
+                            checkBoundsViolation={checkBoundsViolation}
                             isRunning={isRunning}
                         />
                     </div>
